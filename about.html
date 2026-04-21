@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>About Us — WaFlow</title>
+  <meta name="description" content="WaFlow ke baare mein jaano — kaun hain hum, kya hai hamara mission, aur kyun banaya yeh platform."/>
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    .about-hero {
+      padding:140px 24px 80px; text-align:center; position:relative; overflow:hidden;
+    }
+    .about-hero h1 { margin-bottom:20px; }
+    .about-hero p  { font-size:18px; color:var(--muted); max-width:600px; margin:0 auto; }
+
+    .mission-box {
+      background:linear-gradient(135deg,#00e67610,#00e67604);
+      border:1px solid #00e67630; border-radius:16px;
+      padding:48px; margin:48px 0; text-align:center;
+    }
+    .mission-box h2 { margin-bottom:16px; font-size:clamp(22px,3vw,32px); }
+    .mission-box p  { font-size:16px; color:var(--text); max-width:620px; margin:0 auto; }
+
+    .team-card { text-align:center; }
+    .team-avatar {
+      width:80px; height:80px; border-radius:50%; margin:0 auto 16px;
+      background:linear-gradient(135deg,#00e676,#00c853);
+      display:flex; align-items:center; justify-content:center;
+      font-family:var(--font-d); font-weight:800; color:#000; font-size:28px;
+    }
+    .team-card h4 { margin-bottom:4px; }
+    .team-card p  { color:var(--muted); font-size:13px; }
+
+    .value-card { display:flex; gap:20px; align-items:flex-start; }
+    .value-icon { font-size:28px; flex-shrink:0; margin-top:4px; }
+    .value-card h4 { margin-bottom:6px; }
+    .value-card p  { color:var(--muted); font-size:14px; }
+
+    .timeline-item { display:flex; gap:24px; padding:24px 0; border-bottom:1px solid var(--border); }
+    .timeline-item:last-child { border-bottom:none; }
+    .timeline-year {
+      min-width:80px; font-family:var(--font-d); font-weight:800;
+      font-size:20px; color:var(--green);
+    }
+    .timeline-item p { color:var(--muted); font-size:14px; margin-top:4px; }
+  </style>
+</head>
+<body>
+<script src="shared.js"></script>
+<script>injectNav('About');</script>
+
+<!-- Hero -->
+<section class="about-hero">
+  <div class="hero-bg"></div>
+  <div class="hero-glow"></div>
+  <div style="position:relative;z-index:1" class="fade-up">
+    <div class="section-label"><span class="dot"></span> Our Story</div>
+    <h1>India ke Businesses ke Liye<br>Banaya WaFlow</h1>
+    <p>Hum ek small team hain jo believe karte hain ki har Indian business ko world-class automation tools milne chahiye — bina complicated setup ke.</p>
+  </div>
+</section>
+
+<!-- Mission -->
+<section class="section" style="padding-top:0">
+  <div class="section-inner">
+    <div class="mission-box">
+      <div class="section-label" style="justify-content:center"><span class="dot"></span> Our Mission</div>
+      <h2>WhatsApp ko Aapka Best Salesperson Banana</h2>
+      <p>India mein 500 million+ WhatsApp users hain. Har business WhatsApp use karta hai. Lekin manual replies time wasteful hain. WaFlow is gap ko bharta hai — intelligent automation se jo aapke business ki tarah baat karta hai.</p>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid-4" style="margin-bottom:64px">
+      <div class="card" style="text-align:center">
+        <div style="font-family:var(--font-d);font-size:40px;font-weight:800;color:var(--green)">500+</div>
+        <div style="color:var(--muted);font-size:13px;margin-top:6px">Happy Businesses</div>
+      </div>
+      <div class="card" style="text-align:center">
+        <div style="font-family:var(--font-d);font-size:40px;font-weight:800;color:var(--green)">2M+</div>
+        <div style="color:var(--muted);font-size:13px;margin-top:6px">Messages Sent</div>
+      </div>
+      <div class="card" style="text-align:center">
+        <div style="font-family:var(--font-d);font-size:40px;font-weight:800;color:var(--green)">15+</div>
+        <div style="color:var(--muted);font-size:13px;margin-top:6px">Cities in India</div>
+      </div>
+      <div class="card" style="text-align:center">
+        <div style="font-family:var(--font-d);font-size:40px;font-weight:800;color:var(--green)">98%</div>
+        <div style="color:var(--muted);font-size:13px;margin-top:6px">Customer Satisfaction</div>
+      </div>
+    </div>
+
+    <!-- Values -->
+    <div style="margin-bottom:72px">
+      <h2 style="text-align:center;margin-bottom:40px">Hamare Values</h2>
+      <div class="grid-2">
+        <div class="card value-card">
+          <div class="value-icon">🎯</div>
+          <div>
+            <h4>Simplicity First</h4>
+            <p>Complicated nahi, simple. 3 minute mein setup. Koi technical knowledge required nahi.</p>
+          </div>
+        </div>
+        <div class="card value-card">
+          <div class="value-icon">🔒</div>
+          <div>
+            <h4>Privacy & Security</h4>
+            <p>Aapka data sirf aapka hai. Firebase encryption + Meta's secure API. Zero data selling.</p>
+          </div>
+        </div>
+        <div class="card value-card">
+          <div class="value-icon">🇮🇳</div>
+          <div>
+            <h4>Made for India</h4>
+            <p>Hindi support, Indian pricing, Indian business patterns ke liye design kiya gaya.</p>
+          </div>
+        </div>
+        <div class="card value-card">
+          <div class="value-icon">🚀</div>
+          <div>
+            <h4>Always Improving</h4>
+            <p>Customer feedback se har week new features. Aap suggest karo, hum build karte hain.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Team -->
+    <div style="margin-bottom:72px">
+      <h2 style="text-align:center;margin-bottom:40px">Hamaari Team</h2>
+      <div class="grid-3">
+        <div class="card team-card">
+          <div class="team-avatar">A</div>
+          <h4>Arjun Verma</h4>
+          <p style="color:var(--green);font-size:12px;margin-bottom:8px">Founder & CEO</p>
+          <p>Ex-Razorpay. 8 years of B2B SaaS experience. Believes every Indian SMB deserves great tools.</p>
+        </div>
+        <div class="card team-card">
+          <div class="team-avatar">S</div>
+          <h4>Sneha Patel</h4>
+          <p style="color:var(--green);font-size:12px;margin-bottom:8px">CTO</p>
+          <p>Full-stack engineer. Previously at Juspay. Built the entire WaFlow backend from scratch.</p>
+        </div>
+        <div class="card team-card">
+          <div class="team-avatar">R</div>
+          <h4>Rohit Sharma</h4>
+          <p style="color:var(--green);font-size:12px;margin-bottom:8px">Head of Growth</p>
+          <p>Marketing expert. Helped 200+ businesses set up their WhatsApp automation successfully.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Timeline -->
+    <div style="max-width:700px;margin:0 auto">
+      <h2 style="text-align:center;margin-bottom:40px">Hamara Safar</h2>
+      <div class="card" style="padding:0">
+        <div style="padding:0 28px">
+          <div class="timeline-item">
+            <div class="timeline-year">2023</div>
+            <div>
+              <h4>WaFlow Ka Idea</h4>
+              <p>Ek small business owner ki problem se shuru hua — manual WhatsApp replies se haar gaye the.</p>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-year">2024</div>
+            <div>
+              <h4>Beta Launch</h4>
+              <p>50 businesses ke saath beta launch. Meta Cloud API integration complete ki.</p>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-year">2025</div>
+            <div>
+              <h4>500+ Businesses</h4>
+              <p>Pro aur Enterprise plans launch. Multi-client admin dashboard ready. 2M+ messages sent.</p>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-year">Now</div>
+            <div>
+              <h4>Aap Ka Time Hai</h4>
+              <p>Join karo India ke fastest growing WhatsApp automation platform ke saath!</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="section" style="background:var(--dark)">
+  <div class="section-inner">
+    <div class="mission-box">
+      <h2>Hamaari Team Se Milein</h2>
+      <p style="margin-bottom:28px">Koi bhi question ho — hum yahan hain. Demo chahiye? Contact karo abhi.</p>
+      <a href="contact.html" class="btn btn-primary" style="padding:13px 32px;font-size:15px">Contact Us →</a>
+    </div>
+  </div>
+</section>
+
+<script>injectFooter();</script>
+</body>
+</html>

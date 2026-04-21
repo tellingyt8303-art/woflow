@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pricing — WaFlow</title>
+  <meta name="description" content="WaFlow ke simple plans. Starter ₹999, Pro ₹2499, Enterprise ₹5999. 14-day free trial. No card needed."/>
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    .pricing-hero { padding:140px 24px 60px; text-align:center; position:relative; overflow:hidden; }
+    .toggle-wrap {
+      display:inline-flex; background:var(--card); border:1px solid var(--border);
+      border-radius:30px; padding:4px; gap:4px; margin-bottom:56px;
+    }
+    .toggle-btn {
+      padding:8px 22px; border-radius:24px; border:none; font-family:var(--font-b);
+      font-size:13px; font-weight:600; cursor:pointer; transition:all .2s;
+    }
+    .toggle-btn.active   { background:var(--green); color:#000; }
+    .toggle-btn.inactive { background:transparent; color:var(--muted); }
+
+    .plans-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; margin-bottom:72px; }
+    .plan-card { position:relative; }
+    .plan-card.popular {
+      border-color:var(--green);
+      transform:scale(1.03);
+    }
+    .popular-badge {
+      position:absolute; top:-13px; left:50%; transform:translateX(-50%);
+      background:var(--green); color:#000; font-size:11px; font-weight:700;
+      padding:4px 16px; border-radius:20px; letter-spacing:1px; white-space:nowrap;
+    }
+    .plan-name { font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; }
+    .plan-price { display:flex; align-items:flex-end; gap:4px; margin-bottom:8px; }
+    .plan-price .amt { font-family:var(--font-d); font-size:48px; font-weight:800; color:var(--white); }
+    .plan-price .per { color:var(--muted); margin-bottom:10px; }
+    .plan-desc { color:var(--muted); font-size:13px; margin-bottom:24px; }
+    .plan-features { list-style:none; margin-bottom:28px; display:flex; flex-direction:column; gap:10px; }
+    .plan-features li { display:flex; gap:10px; font-size:14px; align-items:flex-start; }
+    .plan-features li .chk { color:var(--green); font-weight:700; flex-shrink:0; }
+
+    .compare-table th { background:var(--card); }
+    .compare-table .feature-col { color:var(--text); }
+    .yes { color:var(--green); font-weight:700; text-align:center; }
+    .no  { color:var(--muted); text-align:center; }
+    .val { color:var(--white); font-weight:600; text-align:center; }
+
+    .faq-item { border-bottom:1px solid var(--border); padding:20px 0; }
+    .faq-item:last-child { border-bottom:none; }
+    .faq-q { font-weight:600; color:var(--white); cursor:pointer; display:flex; justify-content:space-between; }
+    .faq-q span { color:var(--green); font-size:20px; transition:transform .3s; }
+    .faq-a { color:var(--muted); font-size:14px; max-height:0; overflow:hidden; transition:max-height .3s,margin .3s; }
+    .faq-item.open .faq-q span { transform:rotate(45deg); }
+    .faq-item.open .faq-a { max-height:200px; margin-top:10px; }
+  </style>
+</head>
+<body>
+<script src="shared.js"></script>
+<script>injectNav('Pricing');</script>
+
+<section class="pricing-hero">
+  <div class="hero-bg"></div>
+  <div class="hero-glow"></div>
+  <div style="position:relative;z-index:1" class="fade-up">
+    <div class="section-label"><span class="dot"></span> Pricing</div>
+    <h1 style="margin-bottom:14px">Simple, Transparent Pricing</h1>
+    <p style="color:var(--muted);font-size:17px;max-width:500px;margin:0 auto 32px">No hidden fees. No setup charges. Cancel anytime.</p>
+    <div class="toggle-wrap">
+      <button class="toggle-btn active" id="btnMonthly" onclick="toggleBilling('monthly')">Monthly</button>
+      <button class="toggle-btn inactive" id="btnAnnual" onclick="toggleBilling('annual')">Annual <span style="color:var(--green);font-size:11px">−20%</span></button>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0">
+  <div class="section-inner">
+    <div class="plans-grid" id="plansGrid">
+      <!-- JS se inject hoga -->
+    </div>
+
+    <!-- Compare Table -->
+    <h2 style="text-align:center;margin-bottom:32px">Full Feature Comparison</h2>
+    <div class="card" style="padding:0;overflow:hidden;margin-bottom:72px">
+      <div style="overflow-x:auto">
+        <table class="compare-table" style="width:100%;border-collapse:collapse;font-size:14px">
+          <thead>
+            <tr>
+              <th style="text-align:left;padding:16px 20px;color:var(--muted);font-weight:500;width:35%">Feature</th>
+              <th style="padding:16px;text-align:center;color:var(--muted);font-weight:500">Starter</th>
+              <th style="padding:16px;text-align:center;color:var(--green);font-weight:700">Pro ⭐</th>
+              <th style="padding:16px;text-align:center;color:#448aff;font-weight:500">Enterprise</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-top:1px solid var(--border)">
+              <td style="padding:14px 20px" class="feature-col">WhatsApp Numbers</td>
+              <td class="val">1</td><td class="val">3</td><td class="val">Unlimited</td>
+            </tr>
+            <tr style="border-top:1px solid var(--border);background:#0d110d">
+              <td style="padding:14px 20px" class="feature-col">Messages / Month</td>
+              <td class="val">500</td><td class="val">5,000</td><td class="val">Unlimited</td>
+            </tr>
+            <tr style="border-top:1px solid var(--border)">
+              <td style="padding:14px 20px" class="feature-col">Templates</td>
+              <td class="val">5</td><td class="val">Unlimited</td><td class="val">Unlimited</td>
+            </tr>
+            <tr style="border-top:1px solid var(--border);background:#0d110d">
+              <td style="padding:14px 20px" class="feature-col">Lead Capture</td>
+              <td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td>
+            </tr>
+            <tr style="border-top:1px solid var(--border)">
+              <td style="padding:14px 20px" class="feature-col">Follow-up Scheduler</td>
+              <td class="no">—</td><td class="yes">✓</td><td class="yes">✓</td>
+            </tr>
+            <tr style="border-top:1px solid var(--border);background:#0d110d">
+              <td style="padding:14px 20px" class="feature-col">Analytics Dashboard</td>
+              <td class="no">Basic</td><td class="yes">Advanced</td><td class="yes">Full</td>
+            </tr>
+            <tr style="border-top:1px solid var(--border)">
+              <td style="padding:14px 20px" class="feature-col">Multi-Client Admin</td>
+              <td class="no">—</td><td class="no">—</td><td class="yes">✓</td>
+            </tr>
+            <tr style="border-top:1px solid var(--border);background:#0d110d">
+              <td style="padding:14px 20px" class="feature-col">White Label</td>
+              <td class="no">—</td><td class="no">—</td><td class="yes">✓</td>
+            </tr>
+            <tr style="border-top:1px solid var(--border)">
+              <td style="padding:14px 20px" class="feature-col">Support</td>
+              <td class="val">Email</td><td class="val">Priority</td><td class="val">Dedicated</td>
+            </tr>
+            <tr style="border-top:1px solid var(--border);background:#0d110d">
+              <td style="padding:14px 20px" class="feature-col">SLA Uptime</td>
+              <td class="no">—</td><td class="val">99.5%</td><td class="val">99.9%</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- FAQ -->
+    <div style="max-width:700px;margin:0 auto">
+      <h2 style="text-align:center;margin-bottom:40px">Pricing FAQs</h2>
+      <div class="card" style="padding:8px 28px">
+        <div class="faq-item">
+          <div class="faq-q" onclick="toggleFaq(this)">Kya free trial available hai? <span>+</span></div>
+          <div class="faq-a">Haan! Pro plan par 14-day free trial. No credit card required.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q" onclick="toggleFaq(this)">Plan change kar sakte hain? <span>+</span></div>
+          <div class="faq-a">Haan, kabhi bhi upgrade ya downgrade kar sakte hain. Changes next billing cycle se apply honge.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q" onclick="toggleFaq(this)">Message limit exceed ho jaaye toh? <span>+</span></div>
+          <div class="faq-a">Hum notify karenge. Messages queue hoge. Aap upgrade kar sakte hain ya top-up credits purchase kar sakte hain.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q" onclick="toggleFaq(this)">GST lagega kya? <span>+</span></div>
+          <div class="faq-a">Haan, Indian users ke liye 18% GST applicable hai. Invoice automatically generate hoti hai.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q" onclick="toggleFaq(this)">Refund policy kya hai? <span>+</span></div>
+          <div class="faq-a">First payment ke 7 din andar full refund. Details ke liye <a href="refund.html">Refund Policy</a> padho.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="section" style="background:var(--dark)">
+  <div class="section-inner" style="text-align:center">
+    <h2 style="margin-bottom:12px">Shuru Karo Aaj Hi</h2>
+    <p style="color:var(--muted);margin-bottom:28px">14-day free trial. No credit card. Cancel anytime.</p>
+    <a href="signup.html" class="btn btn-primary" style="padding:14px 36px;font-size:15px">Start Free Trial →</a>
+  </div>
+</section>
+
+<script>
+let billing = 'monthly';
+const plans = [
+  {
+    name:'Starter', color:'var(--muted)',
+    monthly:999, annual:799,
+    desc:'Small businesses ke liye perfect starting point.',
+    features:['1 WhatsApp Number','500 messages/month','5 Templates','Basic Lead Capture','Email Support'],
+    btn:'Get Started', btnClass:'btn-ghost', href:'signup.html'
+  },
+  {
+    name:'Pro', color:'var(--green)', popular:true,
+    monthly:2499, annual:1999,
+    desc:'Growing businesses ke liye — sab kuch unlimited.',
+    features:['3 WhatsApp Numbers','5,000 messages/month','Unlimited Templates','Advanced Lead Management','Follow-up Scheduler','Analytics Dashboard','Priority Support'],
+    btn:'Start Pro Trial', btnClass:'btn-primary', href:'signup.html'
+  },
+  {
+    name:'Enterprise', color:'#448aff',
+    monthly:5999, annual:4999,
+    desc:'Agencies aur large businesses ke liye.',
+    features:['Unlimited Numbers','Unlimited Messages','Multi-Client Admin','Custom Integrations','White-label Option','Dedicated Manager','99.9% SLA'],
+    btn:'Contact Sales', btnClass:'btn-outline', href:'contact.html'
+  }
+];
+
+function renderPlans() {
+  const grid = document.getElementById('plansGrid');
+  grid.innerHTML = plans.map(p => `
+    <div class="card plan-card ${p.popular ? 'popular' : ''}">
+      ${p.popular ? '<div class="popular-badge">MOST POPULAR</div>' : ''}
+      <div class="plan-name" style="color:${p.color}">${p.name}</div>
+      <div class="plan-price">
+        <div class="amt">₹${(billing==='annual'?p.annual:p.monthly).toLocaleString('en-IN')}</div>
+        <div class="per">/mo</div>
+      </div>
+      <div class="plan-desc">${p.desc}</div>
+      <ul class="plan-features">
+        ${p.features.map(f=>`<li><span class="chk">✓</span><span>${f}</span></li>`).join('')}
+      </ul>
+      <a href="${p.href}" class="btn ${p.btnClass}" style="width:100%;justify-content:center">${p.btn}</a>
+    </div>
+  `).join('');
+}
+
+function toggleBilling(type) {
+  billing = type;
+  document.getElementById('btnMonthly').className = 'toggle-btn ' + (type==='monthly'?'active':'inactive');
+  document.getElementById('btnAnnual').className  = 'toggle-btn ' + (type==='annual'?'active':'inactive');
+  renderPlans();
+}
+
+function toggleFaq(el) {
+  const item = el.closest('.faq-item');
+  const open = item.classList.contains('open');
+  document.querySelectorAll('.faq-item.open').forEach(i=>i.classList.remove('open'));
+  if (!open) item.classList.add('open');
+}
+
+renderPlans();
+</script>
+<script>injectFooter();</script>
+</body>
+</html>

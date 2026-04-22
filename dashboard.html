@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard — WaFlow</title>
+  <link rel="stylesheet" href="auth.css"/>
+  <style>
+    .wa-connect-box{background:linear-gradient(135deg,#00e67610,#00e67604);border:1px solid var(--green-border);border-radius:14px;padding:32px;text-align:center}
+    .wa-connect-icon{width:80px;height:80px;border-radius:50%;margin:0 auto 20px;display:flex;align-items:center;justify-content:center;font-size:36px;border:2px solid var(--border2)}
+    .tag{display:inline-flex;align-items:center;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;background:#00e67614;color:var(--green)}
+    .msg-row{display:flex;padding:8px 0;border-bottom:1px solid #1a1e1a;gap:12px;align-items:flex-start}
+    .msg-row:last-child{border:none}
+    .lead-row td{cursor:pointer}
+    .lead-row:hover td{background:#141814}
+    .empty-state{text-align:center;padding:48px 20px;color:var(--muted)}
+    .empty-state .empty-icon{font-size:40px;margin-bottom:12px}
+    .plan-progress{margin-top:12px}
+  </style>
+</head>
+<body>
+<div class="dash-layout">
+
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar" id="sidebar">
+    <a href="index.html" class="sidebar-logo">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="#00e676"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      <span>WaFlow</span>
+    </a>
+
+    <div class="sidebar-section">Main</div>
+    <button class="nav-item active" onclick="showTab('overview',this)">
+      <span class="nav-icon">📊</span> Overview
+    </button>
+    <button class="nav-item" onclick="showTab('whatsapp',this)">
+      <span class="nav-icon">💬</span> WhatsApp
+      <span class="nav-badge" id="waStatusBadge" style="display:none">!</span>
+    </button>
+    <button class="nav-item" onclick="showTab('templates',this)">
+      <span class="nav-icon">📋</span> Templates
+    </button>
+
+    <div class="sidebar-section">Leads</div>
+    <button class="nav-item" onclick="showTab('leads',this)">
+      <span class="nav-icon">👥</span> All Leads
+    </button>
+    <button class="nav-item" onclick="showTab('messages',this)">
+      <span class="nav-icon">✉️</span> Messages
+    </button>
+    <button class="nav-item" onclick="showTab('followups',this)">
+      <span class="nav-icon">📅</span> Follow-ups
+    </button>
+
+    <div class="sidebar-section">Account</div>
+    <button class="nav-item" onclick="showTab('settings',this)">
+      <span class="nav-icon">⚙️</span> Settings
+    </button>
+
+    <!-- User info -->
+    <div class="sidebar-bottom">
+      <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;margin-bottom:8px">
+        <span class="wa-dot" id="waDot" style="width:8px;height:8px"></span>
+        <span style="font-size:12px;color:var(--muted)" id="waStatusText">Not connected</span>
+      </div>
+      <div class="sidebar-user" id="sidebarUser">
+        <div class="avatar" id="sidebarAvatar" style="width:34px;height:34px;font-size:13px">?</div>
+        <div>
+          <div class="sidebar-user-name" id="sidebarName">Loading...</div>
+          <div class="sidebar-user-role" id="sidebarPlan">—</div>
+        </div>
+      </div>
+      <button class="nav-item" style="margin-top:4px;color:var(--red)" onclick="doLogout()">
+        <span class="nav-icon">🚪</span> Logout
+      </button>
+    </div>
+  </aside>
+
+  <!-- ── Main ── -->
+  <div class="dash-main">
+    <div class="dash-topbar">
+      <div style="display:flex;align-items:center;gap:12px">
+        <button onclick="document.getElementById('sidebar').classList.toggle('open')" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;display:none" id="menuBtn">☰</button>
+        <span class="dash-topbar-title" id="topbarTitle">Overview</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="avatar" id="topAvatar" style="width:32px;height:32px;font-size:12px;cursor:pointer" onclick="showTab('settings', document.querySelector('.nav-item:nth-last-child(3)'))">?</div>
+      </div>
+    </div>
+
+    <div class="dash-content">
+
+      <!-- ══ OVERVIEW ══ -->
+      <div class="page-section active" id="tab-overview">
+        <div style="margin-bottom:24px">
+          <h2 style="font-family:var(--font-d);font-size:22px;font-weight:800;color:var(--white)" id="greetingText">Good day!</h2>
+          <p style="color:var(--muted);font-size:13px" id="businessSubtitle">Loading...</p>
+        </div>
+        <!-- Stats -->
+        <div class="grid-4" style="margin-bottom:20px">
+          <div class="stat-card"><div class="stat-label">Total Leads</div><div class="stat-value" id="statLeads">—</div><div class="stat-delta" id="statLeadsDelta"></div></div>
+          <div class="stat-card"><div class="stat-label">Messages Sent</div><div class="stat-value" id="statMessages">—</div></div>
+          <div class="stat-card"><div class="stat-label">Active Templates</div><div class="stat-value" id="statTemplates" style="color:var(--yellow)">—</div></div>
+          <div class="stat-card"><div class="stat-label">Pending Follow-ups</div><div class="stat-value" id="statFollowups" style="color:var(--blue)">—</div></div>
+        </div>
+        <!-- Recent leads + Quick actions -->
+        <div class="grid-2">
+          <div class="card">
+            <div style="font-family:var(--font-d);font-weight:700;color:var(--white);margin-bottom:16px;font-size:15px">Recent Leads</div>
+            <div id="recentLeadsList"><div class="empty-state"><div class="empty-icon">👥</div><p>Abhi koi lead nahi</p></div></div>
+          </div>
+          <div class="card">
+            <div style="font-family:var(--font-d);font-weight:700;color:var(--white);margin-bottom:16px;font-size:15px">Quick Actions</div>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <button class="btn btn-outline btn-full" style="justify-content:flex-start" onclick="showTab('whatsapp',null)">💬 Connect WhatsApp</button>
+              <button class="btn btn-ghost btn-full" style="justify-content:flex-start" onclick="openAddTemplate()">📋 New Template</button>
+              <button class="btn btn-ghost btn-full" style="justify-content:flex-start" onclick="showTab('leads',null)">👥 View All Leads</button>
+              <button class="btn btn-ghost btn-full" style="justify-content:flex-start" onclick="showTab('followups',null)">📅 Follow-ups</button>
+            </div>
+            <!-- Plan info -->
+            <div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border)">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                <span style="font-size:13px;color:var(--muted)">Plan</span>
+                <span class="badge badge-green" id="planBadge">Trial</span>
+              </div>
+              <div style="font-size:12px;color:var(--muted)" id="planExpiry"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ WHATSAPP ══ -->
+      <div class="page-section" id="tab-whatsapp">
+        <div style="margin-bottom:24px"><h2 style="font-family:var(--font-d);font-size:20px;font-weight:800;color:var(--white)">WhatsApp Connection</h2></div>
+        <div class="grid-2">
+          <!-- Status Card -->
+          <div class="wa-connect-box" id="waConnectBox">
+            <div class="wa-connect-icon" id="waConnectIcon" style="background:#ff3d5714;border-color:#ff3d5730">❌</div>
+            <h3 style="font-family:var(--font-d);color:var(--white);margin-bottom:8px" id="waConnectTitle">WhatsApp Connected Nahi</h3>
+            <p style="color:var(--muted);font-size:13px;margin-bottom:24px" id="waConnectDesc">Neeche apna Meta Phone Number ID aur Access Token daalo.</p>
+            <div id="waConnectedInfo" style="display:none">
+              <div class="badge badge-green" style="font-size:13px;padding:6px 16px;margin-bottom:16px" id="waNumberDisplay">+91 XXXXX</div><br>
+              <button class="btn btn-danger btn-sm" onclick="disconnectWA()">Disconnect</button>
+            </div>
+          </div>
+
+          <!-- Config Form -->
+          <div class="card">
+            <h4 style="font-family:var(--font-d);color:var(--white);margin-bottom:4px">Meta Configuration</h4>
+            <p style="color:var(--muted);font-size:13px;margin-bottom:20px">Meta Developer Console se copy karo</p>
+            <div class="form-group">
+              <label class="form-label">Phone Number ID</label>
+              <input type="text" id="phoneNumberId" class="form-input" placeholder="1234567890123456" />
+              <div style="font-size:11px;color:var(--muted);margin-top:4px">Meta Console → WhatsApp → API Setup → Phone Number ID</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Permanent Access Token</label>
+              <div class="input-wrap">
+                <input type="password" id="accessToken" class="form-input" placeholder="EAAxxxxxx..." />
+                <button type="button" class="password-toggle" onclick="togglePassword('accessToken',this)">👁</button>
+              </div>
+              <div style="font-size:11px;color:var(--muted);margin-top:4px">System User Token banao Meta Business Settings mein</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Webhook URL (Twilio Console mein set karo)</label>
+              <div style="background:#0d110d;border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--green);font-family:monospace;display:flex;justify-content:space-between;align-items:center">
+                <span>https://api.waflow.in/webhook/meta</span>
+                <button onclick="navigator.clipboard.writeText('https://api.waflow.in/webhook/meta').then(()=>toast('Copied!','success'))" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px">📋</button>
+              </div>
+            </div>
+            <div id="waFormError" style="display:none;background:#ff3d5714;border:1px solid #ff3d5730;border-radius:8px;padding:10px 14px;color:var(--red);font-size:13px;margin-bottom:14px"></div>
+            <button class="btn btn-primary btn-full" id="waConnectBtn" onclick="connectWhatsApp()">Connect & Verify →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ TEMPLATES ══ -->
+      <div class="page-section" id="tab-templates">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+          <h2 style="font-family:var(--font-d);font-size:20px;font-weight:800;color:var(--white)">Templates</h2>
+          <button class="btn btn-primary btn-sm" onclick="openAddTemplate()">+ New Template</button>
+        </div>
+        <div id="templatesList"></div>
+      </div>
+
+      <!-- ══ LEADS ══ -->
+      <div class="page-section" id="tab-leads">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+          <h2 style="font-family:var(--font-d);font-size:20px;font-weight:800;color:var(--white)">All Leads</h2>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <input type="text" id="leadSearch" class="form-input" placeholder="Search leads..." style="width:200px;padding:8px 14px" oninput="filterLeads()"/>
+            <select id="leadStatusFilter" class="form-input" style="width:140px;padding:8px" onchange="filterLeads()">
+              <option value="">All Status</option>
+              <option value="new">New</option>
+              <option value="contacted">Contacted</option>
+              <option value="qualified">Qualified</option>
+              <option value="converted">Converted</option>
+              <option value="lost">Lost</option>
+            </select>
+          </div>
+        </div>
+        <div class="card" style="padding:0">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Name</th><th>Phone</th><th>Status</th><th>Source</th><th>Date</th><th>Action</th></tr></thead>
+              <tbody id="leadsTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ MESSAGES ══ -->
+      <div class="page-section" id="tab-messages">
+        <div style="margin-bottom:20px"><h2 style="font-family:var(--font-d);font-size:20px;font-weight:800;color:var(--white)">Message Logs</h2></div>
+        <div class="card" style="padding:0">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Direction</th><th>Phone</th><th>Message</th><th>Template</th><th>Time</th></tr></thead>
+              <tbody id="messagesTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ FOLLOW-UPS ══ -->
+      <div class="page-section" id="tab-followups">
+        <div style="margin-bottom:20px"><h2 style="font-family:var(--font-d);font-size:20px;font-weight:800;color:var(--white)">Follow-ups</h2></div>
+        <div class="card" style="padding:0">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Phone</th><th>Message</th><th>Scheduled</th><th>Status</th><th>Attempt</th></tr></thead>
+              <tbody id="followupsTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ SETTINGS ══ -->
+      <div class="page-section" id="tab-settings">
+        <div style="margin-bottom:24px"><h2 style="font-family:var(--font-d);font-size:20px;font-weight:800;color:var(--white)">Settings</h2></div>
+        <div class="grid-2">
+          <!-- Profile -->
+          <div class="card">
+            <h4 style="font-family:var(--font-d);color:var(--white);margin-bottom:20px">Profile Update</h4>
+            <div class="form-group"><label class="form-label">Full Name</label><input type="text" id="settingName" class="form-input"/></div>
+            <div class="form-group"><label class="form-label">Business Name</label><input type="text" id="settingBusiness" class="form-input"/></div>
+            <div class="form-group"><label class="form-label">Phone</label><input type="text" id="settingPhone" class="form-input"/></div>
+            <div class="form-group"><label class="form-label">Email (readonly)</label><input type="email" id="settingEmail" class="form-input" readonly style="opacity:.5"/></div>
+            <button class="btn btn-primary" onclick="saveProfile()">Save Changes</button>
+          </div>
+          <!-- Plan -->
+          <div class="card">
+            <h4 style="font-family:var(--font-d);color:var(--white);margin-bottom:20px">Subscription</h4>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+              <div>
+                <div style="font-weight:600;color:var(--white);text-transform:capitalize" id="settingPlanName">Trial</div>
+                <div style="color:var(--muted);font-size:13px" id="settingPlanExpiry"></div>
+              </div>
+              <span class="badge badge-green" id="settingPlanBadge">Active</span>
+            </div>
+            <div class="plan-progress">
+              <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:6px">
+                <span>Messages Used</span><span id="msgUsed">0 / 500</span>
+              </div>
+              <div class="progress-bar"><div class="progress-fill" id="msgProgress" style="width:0%"></div></div>
+            </div>
+            <div style="margin-top:20px;display:flex;gap:10px">
+              <a href="pricing.html" class="btn btn-outline btn-sm">Upgrade Plan</a>
+            </div>
+          </div>
+          <!-- Change Password -->
+          <div class="card">
+            <h4 style="font-family:var(--font-d);color:var(--white);margin-bottom:20px">Change Password</h4>
+            <div class="form-group"><label class="form-label">New Password</label>
+              <div class="input-wrap">
+                <input type="password" id="newPassword" class="form-input" placeholder="Min 8 characters"/>
+                <button type="button" class="password-toggle" onclick="togglePassword('newPassword',this)">👁</button>
+              </div>
+            </div>
+            <div class="form-group"><label class="form-label">Confirm Password</label>
+              <div class="input-wrap">
+                <input type="password" id="confirmNewPassword" class="form-input" placeholder="Dobara daalo"/>
+                <button type="button" class="password-toggle" onclick="togglePassword('confirmNewPassword',this)">👁</button>
+              </div>
+            </div>
+            <button class="btn btn-ghost" onclick="changePassword()">Update Password</button>
+          </div>
+          <!-- Danger Zone -->
+          <div class="card">
+            <h4 style="font-family:var(--font-d);color:var(--red);margin-bottom:12px">Danger Zone</h4>
+            <p style="color:var(--muted);font-size:13px;margin-bottom:16px">Yeh actions irreversible hain.</p>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <button class="btn btn-danger btn-sm" onclick="if(confirm('Saare leads delete karein?')) deleteAllLeads()">🗑 Delete All Leads</button>
+              <button class="btn btn-danger btn-sm" onclick="if(confirm('Account permanently delete karein?')) deleteAccount()">⚠️ Delete Account</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- dash-content -->
+  </div><!-- dash-main -->
+</div><!-- dash-layout -->
+
+<!-- Template Modal -->
+<div class="modal-overlay" id="templateModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="templateModalTitle">New Template</div>
+      <button class="modal-close" onclick="closeModal('templateModal')">×</button>
+    </div>
+    <div class="form-group"><label class="form-label">Template Name *</label><input type="text" id="tmplName" class="form-input" placeholder="e.g. Price Inquiry"/></div>
+    <div class="form-group"><label class="form-label">Trigger Keywords (comma separated)</label><input type="text" id="tmplKeywords" class="form-input" placeholder="price, cost, kitna"/></div>
+    <div class="form-group">
+      <label class="form-label">Message Body * — {name}, {business} use kar sakte ho</label>
+      <textarea id="tmplBody" class="form-input" rows="4" placeholder="Hi {name}! Hamare plans ₹999 se start hote hain. {business} ke liye demo chahiye?"></textarea>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px">
+      <input type="checkbox" id="tmplDefault" style="accent-color:var(--green);width:14px;height:14px"/>
+      <label for="tmplDefault" style="font-size:13px;color:var(--muted)">Default template (koi keyword match na ho toh yeh use hoga)</label>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-primary" onclick="saveTemplate()">Save Template</button>
+      <button class="btn btn-ghost" onclick="closeModal('templateModal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script type="module">
+import { auth, db }         from "./firebase-config.js";
+import { requireAuth, logout } from "./auth-guard.js";
+import {
+  collection, doc, getDocs, addDoc, updateDoc, deleteDoc,
+  query, where, orderBy, limit, serverTimestamp, onSnapshot,
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { updateProfile, updatePassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+let userData = null;
+let clientId = null;
+let allLeads = [];
+let editingTemplateId = null;
+
+// ── Toast ─────────────────────────────────────────────────────
+window.toast = (msg, type='success') => {
+  const icons = {success:'✅',error:'❌',info:'ℹ️'};
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.innerHTML = `<span>${icons[type]||'ℹ️'}</span><span>${msg}</span>`;
+  document.getElementById('toast-container').appendChild(t);
+  setTimeout(()=>t.remove(),3500);
+};
+
+window.togglePassword = (id,btn)=>{
+  const el=document.getElementById(id);
+  el.type=el.type==='password'?'text':'password';
+  btn.textContent=el.type==='password'?'👁':'🙈';
+};
+
+// ── Init ──────────────────────────────────────────────────────
+(async()=>{
+  try {
+    userData = await requireAuth(false);
+    clientId = userData.uid;
+    initUI();
+    loadAll();
+  } catch(e){ console.error(e); }
+})();
+
+function initUI(){
+  const name = userData.name || userData.email || 'User';
+  const biz  = userData.business_name || 'Your Business';
+  const plan = userData.plan || 'trial';
+  const hr   = new Date().getHours();
+  const greet= hr<12?'Good morning':'hr<17?'Good afternoon':'Good evening';
+
+  document.getElementById('greetingText').textContent   = `${greet}, ${name.split(' ')[0]}! 👋`;
+  document.getElementById('businessSubtitle').textContent = biz;
+  document.getElementById('sidebarName').textContent    = name;
+  document.getElementById('sidebarPlan').textContent    = plan.toUpperCase() + ' plan';
+  document.getElementById('planBadge').textContent      = plan;
+  document.getElementById('settingPlanName').textContent= plan;
+  document.getElementById('settingName').value     = name;
+  document.getElementById('settingBusiness').value = biz;
+  document.getElementById('settingPhone').value    = userData.phone || '';
+  document.getElementById('settingEmail').value    = userData.email;
+
+  const initial = name[0].toUpperCase();
+  document.getElementById('sidebarAvatar').textContent = initial;
+  document.getElementById('topAvatar').textContent     = initial;
+
+  if(userData.plan_expires){
+    const exp = new Date(userData.plan_expires.seconds ? userData.plan_expires.seconds*1000 : userData.plan_expires);
+    const txt = `Expires: ${exp.toLocaleDateString('en-IN')}`;
+    document.getElementById('planExpiry').textContent      = txt;
+    document.getElementById('settingPlanExpiry').textContent = txt;
+  }
+
+  // WA status
+  updateWAStatus(userData.wa_connected, userData.whatsapp_number);
+}
+
+function updateWAStatus(connected, number){
+  const dot  = document.getElementById('waDot');
+  const text = document.getElementById('waStatusText');
+  const icon = document.getElementById('waConnectIcon');
+  const title= document.getElementById('waConnectTitle');
+  const desc = document.getElementById('waConnectDesc');
+  const info = document.getElementById('waConnectedInfo');
+  const badge= document.getElementById('waStatusBadge');
+
+  if(connected){
+    dot.className='wa-dot connected';
+    text.textContent=number||'Connected';
+    icon.textContent='✅'; icon.style.background='#00e67614'; icon.style.borderColor='var(--green-border)';
+    title.textContent='WhatsApp Connected!';
+    desc.textContent=`Number: ${number||'Verified'}`;
+    info.style.display='block';
+    document.getElementById('waNumberDisplay').textContent=number||'Connected';
+    badge.style.display='none';
+    document.getElementById('waConnectBtn').style.display='none';
+  } else {
+    dot.className='wa-dot disconnected';
+    text.textContent='Not connected';
+    icon.textContent='❌'; icon.style.background='#ff3d5714'; icon.style.borderColor='#ff3d5730';
+    title.textContent='WhatsApp Connected Nahi';
+    info.style.display='none';
+    badge.style.display='inline';
+    document.getElementById('waConnectBtn').style.display='block';
+  }
+}
+
+// ── Load all data ─────────────────────────────────────────────
+async function loadAll(){
+  await Promise.all([loadStats(), loadLeads(), loadTemplates(), loadMessages(), loadFollowups()]);
+}
+
+async function loadStats(){
+  const [leadsSnap, tmplSnap, msgSnap, fuSnap] = await Promise.all([
+    getDocs(query(collection(db,'leads'), where('client_id','==',clientId))),
+    getDocs(query(collection(db,'templates'), where('client_id','==',clientId), where('active','==',true))),
+    getDocs(query(collection(db,'messages'), where('client_id','==',clientId))),
+    getDocs(query(collection(db,'followups'), where('client_id','==',clientId), where('status','==','pending'))),
+  ]);
+  document.getElementById('statLeads').textContent     = leadsSnap.size;
+  document.getElementById('statTemplates').textContent = tmplSnap.size;
+  document.getElementById('statMessages').textContent  = msgSnap.size;
+  document.getElementById('statFollowups').textContent = fuSnap.size;
+  document.getElementById('msgUsed').textContent       = `${msgSnap.size} / 500`;
+  document.getElementById('msgProgress').style.width   = Math.min((msgSnap.size/500)*100,100)+'%';
+
+  // Recent leads
+  const recent = leadsSnap.docs.slice(-4).reverse();
+  const html = recent.length ? recent.map(d=>{
+    const l=d.data();
+    const colors={new:'badge-blue',contacted:'badge-yellow',qualified:'badge-green',converted:'badge-green',lost:'badge-red'};
+    return `<div class="msg-row"><div class="avatar" style="width:32px;height:32px;font-size:12px;flex-shrink:0">${(l.name||l.phone||'?')[0].toUpperCase()}</div><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;color:var(--white);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l.name||l.phone}</div><div style="font-size:11px;color:var(--muted)">${new Date(l.created_at?.seconds?l.created_at.seconds*1000:l.created_at).toLocaleString('en-IN')}</div></div><span class="badge ${colors[l.status]||'badge-muted'}">${l.status}</span></div>`;
+  }).join('') : '<div class="empty-state"><div class="empty-icon">👥</div><p>Koi lead nahi abhi</p></div>';
+  document.getElementById('recentLeadsList').innerHTML = html;
+}
+
+async function loadLeads(){
+  const snap = await getDocs(query(collection(db,'leads'), where('client_id','==',clientId)));
+  allLeads = snap.docs.map(d=>({id:d.id,...d.data()}));
+  renderLeads(allLeads);
+}
+
+function renderLeads(leads){
+  const colors={new:'badge-blue',contacted:'badge-yellow',qualified:'badge-green',converted:'badge-green',lost:'badge-red'};
+  const html = leads.length ? leads.map(l=>`
+    <tr class="lead-row">
+      <td><div style="display:flex;align-items:center;gap:10px"><div class="avatar" style="width:28px;height:28px;font-size:11px">${(l.name||l.phone||'?')[0].toUpperCase()}</div><span style="font-weight:600;color:var(--white)">${l.name||'—'}</span></div></td>
+      <td style="color:var(--muted)">${l.phone}</td>
+      <td><select class="form-input" style="width:auto;padding:4px 8px;font-size:12px" onchange="updateLeadStatus('${l.id}',this.value)">
+        ${['new','contacted','qualified','converted','lost'].map(s=>`<option value="${s}" ${l.status===s?'selected':''}>${s}</option>`).join('')}
+      </select></td>
+      <td style="color:var(--muted);font-size:12px">${l.source||'whatsapp'}</td>
+      <td style="color:var(--muted);font-size:12px">${l.created_at?new Date(l.created_at.seconds?l.created_at.seconds*1000:l.created_at).toLocaleDateString('en-IN'):'—'}</td>
+      <td><button class="btn btn-ghost btn-xs" onclick="deleteLead('${l.id}')">Delete</button></td>
+    </tr>`).join('') : '<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">👥</div><p>Koi lead nahi abhi</p></div></td></tr>';
+  document.getElementById('leadsTableBody').innerHTML = html;
+}
+
+window.filterLeads = ()=>{
+  const q = document.getElementById('leadSearch').value.toLowerCase();
+  const s = document.getElementById('leadStatusFilter').value;
+  renderLeads(allLeads.filter(l=>{
+    const matchQ = !q || (l.name||'').toLowerCase().includes(q) || l.phone.includes(q);
+    const matchS = !s || l.status===s;
+    return matchQ && matchS;
+  }));
+};
+
+window.updateLeadStatus = async(id,status)=>{
+  await updateDoc(doc(db,'leads',id),{status, updated_at:serverTimestamp()});
+  toast('Status updated!');
+  allLeads = allLeads.map(l=>l.id===id?{...l,status}:l);
+};
+
+window.deleteLead = async(id)=>{
+  if(!confirm('Lead delete karein?')) return;
+  await deleteDoc(doc(db,'leads',id));
+  allLeads = allLeads.filter(l=>l.id!==id);
+  renderLeads(allLeads);
+  toast('Lead deleted!');
+};
+
+async function loadTemplates(){
+  const snap = await getDocs(query(collection(db,'templates'), where('client_id','==',clientId)));
+  const templates = snap.docs.map(d=>({id:d.id,...d.data()}));
+  const colors={true:'badge-green',false:'badge-muted'};
+  const html = templates.length ? templates.map(t=>`
+    <div class="card" style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+        <div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+            <span style="font-family:var(--font-d);font-weight:700;color:var(--white)">${t.name}</span>
+            ${t.is_default?'<span class="badge badge-blue">Default</span>':''}
+            <span class="badge ${t.active?'badge-green':'badge-muted'}">${t.active?'Active':'Inactive'}</span>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">${(t.trigger_keywords||[]).map(k=>`<span class="tag">${k}</span>`).join('')}
+          ${!(t.trigger_keywords||[]).length?'<span style="font-size:12px;color:var(--muted)">No keywords</span>':''}</div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost btn-xs" onclick="editTemplate('${t.id}','${encodeURIComponent(JSON.stringify(t))}')"}>Edit</button>
+          <button class="btn btn-ghost btn-xs" onclick="toggleTemplate('${t.id}',${!t.active})">${t.active?'Disable':'Enable'}</button>
+          <button class="btn btn-danger btn-xs" onclick="deleteTemplate('${t.id}')">Delete</button>
+        </div>
+      </div>
+      <div style="background:#0d110d;border-radius:8px;padding:10px 14px;font-size:13px;color:var(--text);line-height:1.5">"${t.message_body}"</div>
+    </div>`).join('') : '<div class="empty-state"><div class="empty-icon">📋</div><p>Koi template nahi. Banao abhi!</p><br><button class="btn btn-primary btn-sm" onclick="openAddTemplate()">+ New Template</button></div>';
+  document.getElementById('templatesList').innerHTML = html;
+}
+
+window.openAddTemplate = ()=>{
+  editingTemplateId=null;
+  document.getElementById('templateModalTitle').textContent='New Template';
+  document.getElementById('tmplName').value='';
+  document.getElementById('tmplKeywords').value='';
+  document.getElementById('tmplBody').value='';
+  document.getElementById('tmplDefault').checked=false;
+  document.getElementById('templateModal').classList.add('show');
+};
+
+window.editTemplate = (id, encoded)=>{
+  editingTemplateId=id;
+  const t=JSON.parse(decodeURIComponent(encoded));
+  document.getElementById('templateModalTitle').textContent='Edit Template';
+  document.getElementById('tmplName').value=t.name||'';
+  document.getElementById('tmplKeywords').value=(t.trigger_keywords||[]).join(', ');
+  document.getElementById('tmplBody').value=t.message_body||'';
+  document.getElementById('tmplDefault').checked=!!t.is_default;
+  document.getElementById('templateModal').classList.add('show');
+};
+
+window.saveTemplate = async()=>{
+  const name=document.getElementById('tmplName').value.trim();
+  const kw=document.getElementById('tmplKeywords').value;
+  const body=document.getElementById('tmplBody').value.trim();
+  const isDef=document.getElementById('tmplDefault').checked;
+  if(!name||!body){toast('Name aur body required hai!','error');return;}
+  const data={
+    client_id:clientId, name, message_body:body,
+    trigger_keywords:kw?kw.split(',').map(k=>k.trim()).filter(Boolean):[],
+    is_default:isDef, active:true, updated_at:serverTimestamp(),
+  };
+  if(editingTemplateId){
+    await updateDoc(doc(db,'templates',editingTemplateId),data);
+    toast('Template updated!');
+  } else {
+    data.created_at=serverTimestamp();
+    await addDoc(collection(db,'templates'),data);
+    toast('Template saved!');
+  }
+  closeModal('templateModal');
+  loadTemplates();
+  loadStats();
+};
+
+window.toggleTemplate = async(id,active)=>{
+  await updateDoc(doc(db,'templates',id),{active, updated_at:serverTimestamp()});
+  toast(active?'Template enabled!':'Template disabled!');
+  loadTemplates();
+};
+
+window.deleteTemplate = async(id)=>{
+  if(!confirm('Template delete karein?'))return;
+  await deleteDoc(doc(db,'templates',id));
+  toast('Deleted!');
+  loadTemplates();
+  loadStats();
+};
+
+async function loadMessages(){
+  const snap = await getDocs(query(collection(db,'messages'), where('client_id','==',clientId), limit(100)));
+  const msgs = snap.docs.map(d=>d.data());
+  const html = msgs.length ? msgs.map(m=>`
+    <tr>
+      <td><span class="badge ${m.direction==='inbound'?'badge-blue':'badge-green'}">${m.direction==='inbound'?'↓ IN':'↑ OUT'}</span></td>
+      <td style="color:var(--muted);font-size:12px">${m.lead_phone}</td>
+      <td style="font-size:13px;max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">"${m.body}"</td>
+      <td style="font-size:12px;color:var(--muted)">${m.template_id?'Auto':'-'}</td>
+      <td style="font-size:12px;color:var(--muted)">${m.timestamp?new Date(m.timestamp.seconds?m.timestamp.seconds*1000:m.timestamp).toLocaleString('en-IN'):'—'}</td>
+    </tr>`).join('') : '<tr><td colspan="5"><div class="empty-state"><div class="empty-icon">✉️</div><p>Koi message nahi abhi</p></div></td></tr>';
+  document.getElementById('messagesTableBody').innerHTML = html;
+}
+
+async function loadFollowups(){
+  const snap = await getDocs(query(collection(db,'followups'), where('client_id','==',clientId), limit(100)));
+  const fus  = snap.docs.map(d=>d.data());
+  const colors={pending:'badge-yellow',sent:'badge-green',failed:'badge-red',cancelled:'badge-muted'};
+  const html = fus.length ? fus.map(f=>`
+    <tr>
+      <td style="color:var(--muted);font-size:12px">${f.lead_phone}</td>
+      <td style="font-size:13px;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">"${f.message_body}"</td>
+      <td style="font-size:12px;color:var(--muted)">${f.scheduled_at?new Date(f.scheduled_at.seconds?f.scheduled_at.seconds*1000:f.scheduled_at).toLocaleString('en-IN'):'—'}</td>
+      <td><span class="badge ${colors[f.status]||'badge-muted'}">${f.status}</span></td>
+      <td style="text-align:center;color:var(--muted)">${f.attempt||1}</td>
+    </tr>`).join('') : '<tr><td colspan="5"><div class="empty-state"><div class="empty-icon">📅</div><p>Koi follow-up scheduled nahi</p></div></td></tr>';
+  document.getElementById('followupsTableBody').innerHTML = html;
+}
+
+// ── WhatsApp Connect ─────────────────────────────────────────
+window.connectWhatsApp = async()=>{
+  const phoneId = document.getElementById('phoneNumberId').value.trim();
+  const token   = document.getElementById('accessToken').value.trim();
+  const errBox  = document.getElementById('waFormError');
+  const btn     = document.getElementById('waConnectBtn');
+  if(!phoneId||!token){errBox.textContent='Dono fields required hain.';errBox.style.display='block';return;}
+  btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Verifying...';
+  errBox.style.display='none';
+  try {
+    // Call backend API to verify
+    const resp = await fetch(`/api/whatsapp/connect/${clientId}`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+(await auth.currentUser.getIdToken())},
+      body:JSON.stringify({phone_number_id:phoneId, access_token:token}),
+    });
+    const data = await resp.json();
+    if(!resp.ok) throw new Error(data.detail||'Connection failed');
+    await updateDoc(doc(db,'users',clientId),{wa_connected:true, whatsapp_number:data.number, meta_phone_number_id:phoneId});
+    userData.wa_connected=true; userData.whatsapp_number=data.number;
+    updateWAStatus(true, data.number);
+    toast('WhatsApp connected: '+data.number);
+  } catch(e){
+    errBox.textContent=e.message;
+    errBox.style.display='block';
+  }
+  btn.disabled=false; btn.innerHTML='Connect & Verify →';
+};
+
+window.disconnectWA = async()=>{
+  if(!confirm('WhatsApp disconnect karein?'))return;
+  await updateDoc(doc(db,'users',clientId),{wa_connected:false, whatsapp_number:null, meta_phone_number_id:null, meta_access_token:null});
+  userData.wa_connected=false;
+  updateWAStatus(false,null);
+  toast('WhatsApp disconnected','info');
+};
+
+// ── Settings Actions ─────────────────────────────────────────
+window.saveProfile = async()=>{
+  const name=document.getElementById('settingName').value.trim();
+  const biz =document.getElementById('settingBusiness').value.trim();
+  const phone=document.getElementById('settingPhone').value.trim();
+  if(!name)return toast('Naam required hai!','error');
+  await Promise.all([
+    updateDoc(doc(db,'users',clientId),{name,business_name:biz,phone,updated_at:serverTimestamp()}),
+    updateDoc(doc(db,'clients',clientId),{name,business_name:biz,phone,updated_at:serverTimestamp()}),
+    updateProfile(auth.currentUser,{displayName:name}),
+  ]);
+  userData.name=name; userData.business_name=biz;
+  document.getElementById('sidebarName').textContent=name;
+  document.getElementById('sidebarAvatar').textContent=name[0].toUpperCase();
+  document.getElementById('topAvatar').textContent=name[0].toUpperCase();
+  toast('Profile saved!');
+};
+
+window.changePassword = async()=>{
+  const np=document.getElementById('newPassword').value;
+  const cp=document.getElementById('confirmNewPassword').value;
+  if(np.length<8)return toast('Min 8 characters!','error');
+  if(np!==cp)return toast('Passwords match nahi!','error');
+  try{await updatePassword(auth.currentUser,np);toast('Password updated!');}
+  catch(e){
+    if(e.code==='auth/requires-recent-login'){toast('Please re-login karein phir try karein.','error');}
+    else toast(e.message,'error');
+  }
+};
+
+window.deleteAllLeads = async()=>{
+  const snap=await getDocs(query(collection(db,'leads'),where('client_id','==',clientId)));
+  await Promise.all(snap.docs.map(d=>deleteDoc(d.ref)));
+  allLeads=[];
+  renderLeads([]);
+  loadStats();
+  toast('Saare leads delete ho gaye!');
+};
+
+window.deleteAccount = async()=>{
+  toast('Account deletion ke liye support@waflow.in contact karein.','info');
+};
+
+// ── Tab navigation ────────────────────────────────────────────
+const tabTitles={overview:'Overview',whatsapp:'WhatsApp',templates:'Templates',leads:'All Leads',messages:'Messages',followups:'Follow-ups',settings:'Settings'};
+window.showTab = (id,el)=>{
+  document.querySelectorAll('.page-section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  if(el) el.classList.add('active');
+  document.getElementById('topbarTitle').textContent=tabTitles[id]||id;
+};
+
+window.closeModal = id=>document.getElementById(id).classList.remove('show');
+window.doLogout   = logout;
+</script>
+</body>
+</html>

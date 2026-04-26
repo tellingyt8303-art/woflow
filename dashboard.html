@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard — WaFlow</title>
+  <link rel="stylesheet" href="auth.css"/>
+  <style>
+    .sparkline-wrap{height:40px;width:100%;margin-top:10px}
+    .donut-wrap{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+    .donut-legend{display:flex;flex-direction:column;gap:8px;flex:1}
+    .legend-item{display:flex;align-items:center;gap:8px;font-size:12px}
+    .legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+    .ring-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+    .ring-card{text-align:center;padding:20px 12px}
+    .ring-card canvas{display:block;margin:0 auto}
+    .ring-label{font-size:12px;color:var(--muted);margin-top:10px;font-weight:500}
+    .bar-chart-wrap{height:120px;width:100%;margin-top:8px}
+    .tmpl-bar{height:6px;border-radius:3px;background:var(--border);overflow:hidden;margin-top:6px}
+    .tmpl-fill{height:100%;border-radius:3px;background:var(--green);transition:width .8s ease}
+    .fu-summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    .fu-summary-card{text-align:center;border-radius:10px;padding:16px 10px}
+    .fu-val{font-family:var(--font-d);font-size:28px;font-weight:800;color:var(--white)}
+    .fu-lbl{font-size:11px;color:var(--muted);margin-top:4px}
+    .fu-ring-wrap{display:flex;justify-content:center;margin-bottom:4px}
+    .wa-connect-box{background:linear-gradient(135deg,#00e67610,#00e67604);border:1px solid var(--green-border);border-radius:14px;padding:32px;text-align:center}
+    .wa-icon-wrap{width:80px;height:80px;border-radius:50%;margin:0 auto 20px;display:flex;align-items:center;justify-content:center;font-size:36px}
+    .tag{display:inline-flex;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;background:#00e67614;color:var(--green)}
+    .empty-state{text-align:center;padding:40px 20px;color:var(--muted)}
+    .empty-icon{font-size:36px;margin-bottom:10px}
+    .pending-badge{background:var(--yellow);color:#000;border-radius:10px;padding:1px 7px;font-size:10px;font-weight:700;margin-left:auto}
+  </style>
+</head>
+<body>
+<div class="dash-layout">
+  <aside class="sidebar" id="sidebar">
+    <a href="index.html" class="sidebar-logo">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="#00e676"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      <span>WaFlow</span>
+    </a>
+    <div class="sidebar-section">Main</div>
+    <button class="nav-item active" onclick="showTab('overview',this)"><span class="nav-icon">📊</span>Overview</button>
+    <button class="nav-item" onclick="showTab('whatsapp',this)"><span class="nav-icon">💬</span>WhatsApp<span class="nav-badge" id="waBadge" style="display:none">!</span></button>
+    <button class="nav-item" onclick="showTab('templates',this)"><span class="nav-icon">📋</span>Templates</button>
+    <button class="nav-item" onclick="showTab('analytics',this)"><span class="nav-icon">📈</span>Analytics</button>
+    <div class="sidebar-section">Leads</div>
+    <button class="nav-item" onclick="showTab('leads',this)"><span class="nav-icon">👥</span>All Leads</button>
+    <button class="nav-item" onclick="showTab('messages',this)"><span class="nav-icon">✉️</span>Messages</button>
+    <button class="nav-item" onclick="showTab('followups',this)" id="fuNavBtn"><span class="nav-icon">📅</span>Follow-ups<span class="pending-badge" id="fuPendingBadge" style="display:none">0</span></button>
+    <div class="sidebar-section">Account</div>
+    <button class="nav-item" onclick="showTab('settings',this)"><span class="nav-icon">⚙️</span>Settings</button>
+    <div class="sidebar-bottom">
+      <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;margin-bottom:8px">
+        <span class="wa-dot" id="waDot"></span>
+        <span style="font-size:12px;color:var(--muted)" id="waStatusText">Not connected</span>
+      </div>
+      <div class="sidebar-user">
+        <div class="avatar" id="sidebarAvatar" style="width:34px;height:34px;font-size:13px">?</div>
+        <div><div class="sidebar-user-name" id="sidebarName">Loading...</div><div class="sidebar-user-role" id="sidebarPlan">—</div></div>
+      </div>
+      <button class="nav-item" style="margin-top:4px;color:var(--red)" onclick="doLogout()"><span class="nav-icon">🚪</span>Logout</button>
+    </div>
+  </aside>
+
+  <div class="dash-main">
+    <div class="dash-topbar">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span class="dash-topbar-title" id="topbarTitle">Overview</span>
+      </div>
+      <div class="avatar" id="topAvatar" style="width:32px;height:32px;font-size:12px;cursor:pointer" onclick="showTab('settings',null)">?</div>
+    </div>
+    <div class="dash-content">
+
+      <!-- ══ OVERVIEW ══ -->
+      <div class="page-section active" id="tab-overview">
+        <div style="margin-bottom:20px">
+          <h2 style="font-family:var(--font-d);font-size:22px;font-weight:800;color:var(--white)" id="greetText">Good day!</h2>
+          <p style="color:var(--muted);font-size:13px" id="bizSub">—</p>
+        </div>
+        <!-- Stat cards with sparklines -->
+        <div class="grid-4" style="margin-bottom:20px">
+          <div class="stat-card"><div class="stat-label">Total Leads</div><div class="stat-value" id="stLeads">—</div><div class="stat-delta" id="stLeadsDelta"></div><canvas class="sparkline-wrap" id="spLeads"></canvas></div>
+          <div class="stat-card"><div class="stat-label">Messages Sent</div><div class="stat-value" id="stMsgs">—</div><canvas class="sparkline-wrap" id="spMsgs" style="--c:#4d9fff"></canvas></div>
+          <div class="stat-card"><div class="stat-label">Templates Active</div><div class="stat-value" id="stTmpls" style="color:var(--yellow)">—</div><canvas class="sparkline-wrap" id="spTmpls"></canvas></div>
+          <div class="stat-card"><div class="stat-label">Pending Follow-ups</div><div class="stat-value" id="stFu" style="color:var(--blue)">—</div><canvas class="sparkline-wrap" id="spFu"></canvas></div>
+        </div>
+        <!-- Donut + Bar -->
+        <div class="grid-2" style="margin-bottom:20px">
+          <div class="card">
+            <div style="font-family:var(--font-d);font-weight:700;color:var(--white);margin-bottom:16px;font-size:15px">Lead Funnel</div>
+            <div class="donut-wrap">
+              <canvas id="donutCanvas" width="130" height="130" style="flex-shrink:0"></canvas>
+              <div class="donut-legend" id="donutLegend"></div>
+            </div>
+          </div>
+          <div class="card">
+            <div style="font-family:var(--font-d);font-weight:700;color:var(--white);margin-bottom:4px;font-size:15px">Leads This Week</div>
+            <p style="font-size:12px;color:var(--muted);margin-bottom:8px">Daily breakdown</p>
+            <canvas id="weekBarsCanvas" style="width:100%;height:120px;display:block"></canvas>
+          </div>
+        </div>
+        <!-- Recent leads -->
+        <div class="card">
+          <div style="font-family:var(--font-d);font-weight:700;color:var(--white);margin-bottom:16px">Recent Leads</div>
+          <div id="recentLeads"></div>
+        </div>
+      </div>
+
+      <!-- ══ WHATSAPP ══ -->
+      <div class="page-section" id="tab-whatsapp">
+        <div style="margin-bottom:20px"><h2 style="font-family:var(--font-d);font-size:20px;font-weight:800;color:var(--white)">WhatsApp Connection</h2></div>
+        <div class="grid-2">
+          <div class="wa-connect-box">
+            <div class="wa-icon-wrap" id="waIconWrap" style="background:#ff3d5714;border:2px solid #ff3d5730">❌</div>
+            <h3 style="font-family:var(--font-d);color:var(--white);margin-bottom:8px" id="waTitle">Not Connected</h3>
+            <p style="color:var(--muted);font-size:13px;margin-bottom:20px" id="waDesc">Phone Number ID aur Access Token daalo</p>
+            <div id="waInfo" style="display:none">
+              <div class="badge badge-green" style="font-size:13px;padding:6px 18px;margin-bottom:16px" id="waNumDisplay">—</div><br>
+              <button class="btn btn-danger btn-sm" onclick="disconnectWA()">Disconnect</button>
+            </div>
+          </div>
+          <div class="card">
+            <h4 style="font-family:var(--font-d);color:var(--white);margin-bottom:4px">Meta Configuration</h4>
+            <p style="color:var(--muted);font-size:13px;margin-bottom:20px">Meta Developer Console se copy karo</p>
+            <div class="form-group"><label class="form-label">Phone Number ID</label><input type="text" id="phoneId" class="form-input" placeholder="1234567890123456"/></div>
+            <div class="form-group"><label class="form-label">Permanent Access Token</label>
+              <div class="input-wrap"><input type="password" id="accessTok" class="form-input" placeholder="EAAxxxxxx..."/>
+                <button type="button" class="password-toggle" onclick="togglePwInline('accessTok',this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+              </div>
+            </div>
+            <div class="form-group"><label class="form-label">Webhook URL</label>
+              <div style="background:#0d110d;border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--green);font-family:monospace;display:flex;justify-content:space-between;align-items:center">
+                <span>https://api.waflow.in/webhook/meta</span>
+                <button onclick="navigator.clipboard.writeText('https://api.waflow.in/webhook/meta').then(()=>toast('Copied!','info'))" style="background:none;border:none;color:var(--muted);cursor:pointer">📋</button>
+              </div>
+            </div>
+            <div id="waFormErr" style="display:none;background:#ff3d5714;border:1px solid #ff3d5730;border-radius:8px;padding:10px 14px;color:var(--red);font-size:13px;margin-bottom:14px"></div>
+            <button class="btn btn-primary btn-full" id="waConnBtn" onclick="connectWA()">Connect & Verify →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ TEMPLATES ══ -->
+      <div class="page-section" id="tab-templates">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+          <h2 style="font-family:var(--font-d);font-size:20px;font-weight:800;color:var(--white)">Templates</h2>
+          <button class="btn btn-primary btn-sm" onclick="openTmpl()">+ New Template</button>
+        </div>
+        <div id="tmplList"></div>
+      </div>
+
+      <!-- ══ ANALYTICS ══ -->
+      <div class="page-section" id="tab-analytics">
+        <div style="margin-bottom:20px"><h2 style="font-family:var(--font-d);font-size:20px;font-weight:800;color:var(--white)">Analytics</h2></div>
+        <!-- 4 Progress Rings -->
+        <div class="ring-grid" style="margin-bottom:20px">
+          <div class="card ring-card"><canvas id="ringConv" width="120" height="120"></canvas><div class="ring-label">Conversion Rate</div></div>
+          <div class="card ring-card"><canvas id="ringResp" width="120" height="120"></canvas><div class="ring-label">Response Rate</div></div>
+          <div class="card ring-card"><canvas id="ringOpen" width="120" height="120"></canvas><div class="ring-label">Open Rate</div></div>
+          <div class="card ring-card"><canvas id="ringFu" width="120" height="120"></canvas><div class="ring-label">Follow-up Success</div></div>
+        </div>
+        <!-- Daily Leads + Messages bars -->
+        <div class="grid-2" style="margin-bottom:20px">
+          <div class="card"><div style="font-family:var(--font-d);font-weight:700;color:var(--white);margin-bottom:4px">Daily Leads</div><p style="font-size:12px;color:var(--muted);margin-bottom:8px">Last 7 days</p><canvas id="dailyLeadsCanvas" style="width:100%;height:120px;display:block"></canvas></div>
+          <div class="card"><div style="font-family:var(--font-d);font-weight:700;color:var(--white);margin-bottom:4px">Daily Messages</div><p style="font-size:12px;color:var(--muted);margin-bottom:8px">Last 7 days</p><canvas id="dailyMsgsCanvas" style="width:100%;height:120px;display:block"></canvas></div>
+        </div>
+        <!-- Template Performance -->
+        <div class="card" style="margin-bottom:20px">
+          <div style="font-family:var(--font-d);font-weight:700;color:var(--white);margin-bottom:16px">Template Performance</div>
+          <div id="tmplPerf"></div>
+        </div>
+        <!-- Follow-up Breakdown -->
+        <div class="card">
+          <div style="font-family:var(--font-d);font-weight:700;color:var(--white);margin-bottom:16px">Follow-up Breakdown</div>
+          <div class="grid-3">
+            <div style="text-align:center"><div style="font-family:var(--font-d);font-size:28px;font-weight:800;color:var(--green)" id="fuSent">0</div><div style="font-size:12px;color:var(--muted);margin-top:4px">Sent</div></div>
+            <div style="text-align:center"><div style="font-family:var(--font-d);font-size:28px;font-weight:800;color:var(--yellow)" id="fuPend">0</div><div style="font-size:12px;color:var(--muted);margin-top:4px">Pending</div></div>
+            <div style="text-align:center"><div style="font-family:var(--font-d);font-size:28px;font-weight:800;color:var(--red)" id="fuFail">0</div><div style="font-size:12px;color:var(--muted);margin-top:4px">Failed</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ LEADS ══ -->
+      <div class="page-section" id="tab-leads">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+          <h2 style="font-family:var(--font-d);font-size:20px;font-weight:800;color:var(--white)">All Leads</h2>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <input type="text" id="leadSearch" class="form-input" placeholder="Search..." style="width:180px;padding:8px 12px" oninput="filterLeads()"/>
+            <select id="leadFilter" class="form-input" style="width:130px;padding:8px" onchange="filterLeads()">
+              <option value="">All</option><option>new</option><option>contacted</option><option>qualified</option><option>converted</option><option>lost</option>
+            </select>
+          </div>
+        </div>
+        <div class="card" style="padding:0"><div class="table-wrap"><table>
+          <thead><tr><th>Name</th><th>Phone</th><th>Status</th><th>Source</th><th>Date</th><th>Action</th></tr></thead>
+          <tbody id="leadsBody"></tbody>
+        </table></div></div>
+      </div>
+
+      <!-- ══ MESSAGES ══ -->
+      <div class="page-section" id="tab-messages">
+        <div style="margin-bottom:20px"><h2 style="font-family:var(--font-d);font-size:20px;font-weight:800;color:var(--white)">Message Logs</h2></div>
+        <div class="card" style="padding:0"><div class="table-wrap"><table>
+          <thead><tr><th>Dir</th><th>Phone</th><th>Message</th><th>Time</th></tr></thead>
+          <tbody id="msgsBody"></tbody>
+        </table></div></div>
+      </div>
+
+      <!-- ══ FOLLOW-UPS ══ -->
+      <div class="page-section" id="tab-followups">
+        <div style="margin-bottom:20px"><h2 style="font-family:var(--font-d);font-size:20px;font-weight:800;color:var(--white)">Follow-ups</h2></div>
+        <!-- Day summary cards -->
+        <div class="fu-summary-grid" style="margin-bottom:20px" id="fuSummaryCards"></div>
+        <!-- Table -->
+        <div class="card" style="padding:0"><div class="table-wrap"><table>
+          <thead><tr><th>Phone</th><th>Message</th><th>Scheduled</th><th>Status</th><th>Attempt</th><th>Actions</th></tr></thead>
+          <tbody id="fuBody"></tbody>
+        </table></div></div>
+      </div>
+
+      <!-- ══ SETTINGS ══ -->
+      <div class="page-section" id="tab-settings">
+        <div style="margin-bottom:20px"><h2 style="font-family:var(--font-d);font-size:20px;font-weight:800;color:var(--white)">Settings</h2></div>
+        <div class="grid-2">
+          <div class="card">
+            <h4 style="font-family:var(--font-d);color:var(--white);margin-bottom:20px">Profile</h4>
+            <div class="form-group"><label class="form-label">Full Name</label><input id="setName" type="text" class="form-input"/></div>
+            <div class="form-group"><label class="form-label">Business</label><input id="setBiz" type="text" class="form-input"/></div>
+            <div class="form-group"><label class="form-label">Phone</label><input id="setPhone" type="text" class="form-input"/></div>
+            <div class="form-group"><label class="form-label">Email</label><input id="setEmail" type="email" class="form-input" readonly style="opacity:.5"/></div>
+            <button class="btn btn-primary" onclick="saveProfile()">Save Changes</button>
+          </div>
+          <div class="card">
+            <h4 style="font-family:var(--font-d);color:var(--white);margin-bottom:20px">Change Password</h4>
+            <div class="form-group"><label class="form-label">New Password</label>
+              <div class="input-wrap"><input type="password" id="newPw" class="form-input" placeholder="Min 8 characters"/>
+                <button type="button" class="password-toggle" onclick="togglePwInline('newPw',this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+              </div>
+            </div>
+            <div class="form-group"><label class="form-label">Confirm</label>
+              <div class="input-wrap"><input type="password" id="confPw" class="form-input" placeholder="Dobara daalo"/>
+                <button type="button" class="password-toggle" onclick="togglePwInline('confPw',this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+              </div>
+            </div>
+            <button class="btn btn-ghost" onclick="changePw()">Update Password</button>
+          </div>
+          <div class="card">
+            <h4 style="font-family:var(--font-d);color:var(--white);margin-bottom:16px">Plan & Billing</h4>
+            <div style="display:flex;justify-content:space-between;margin-bottom:12px"><span style="color:var(--text);font-weight:600;text-transform:capitalize" id="planName">—</span><span class="badge badge-green">Active</span></div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:16px" id="planExp">—</div>
+            <div style="margin-bottom:8px;display:flex;justify-content:space-between;font-size:12px;color:var(--muted)"><span>Messages Used</span><span id="msgUsedTxt">—</span></div>
+            <div class="progress-bar"><div class="progress-fill" id="msgProgressFill" style="width:0%"></div></div>
+            <div style="margin-top:16px"><a href="pricing.html" class="btn btn-outline btn-sm">Upgrade Plan</a></div>
+          </div>
+          <div class="card">
+            <h4 style="font-family:var(--font-d);color:var(--red);margin-bottom:12px">Danger Zone</h4>
+            <p style="color:var(--muted);font-size:13px;margin-bottom:16px">Irreversible actions.</p>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <button class="btn btn-danger btn-sm" onclick="if(confirm('Delete all leads?'))deleteAllLeads()">🗑 Delete All Leads</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Template Modal -->
+<div class="modal-overlay" id="tmplModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="tmplModalTitle">New Template</div>
+      <button class="modal-close" onclick="closeModal('tmplModal')">×</button>
+    </div>
+    <div class="form-group"><label class="form-label">Name *</label><input type="text" id="tName" class="form-input" placeholder="Price Inquiry"/></div>
+    <div class="form-group"><label class="form-label">Keywords (comma separated)</label><input type="text" id="tKw" class="form-input" placeholder="price, cost, kitna"/></div>
+    <div class="form-group"><label class="form-label">Message Body * — {name}, {business}</label><textarea id="tBody" class="form-input" rows="4" placeholder="Hi {name}! ₹999 se shuru hote hain plans..."></textarea></div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px">
+      <input type="checkbox" id="tDef" style="accent-color:var(--green);width:14px;height:14px"/>
+      <label for="tDef" style="font-size:13px;color:var(--muted)">Default template (fallback)</label>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-primary" onclick="saveTmpl()">Save</button>
+      <button class="btn btn-ghost" onclick="closeModal('tmplModal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script type="module">
+import { auth, db }           from "./firebase-config.js";
+import { requireAuth, logout } from "./auth-guard.js";
+import { drawSparkline, drawDonut, drawBars, drawRing } from "./charts.js";
+import {
+  collection, doc, getDocs, addDoc, updateDoc, deleteDoc,
+  query, where, limit, orderBy, serverTimestamp,
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { updateProfile, updatePassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+let UD=null, CID=null, allLeads=[], allTmpls=[], allFU=[], editTmplId=null;
+const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const today=new Date();
+
+window.toast=(msg,type='success')=>{const t=document.createElement('div');t.className=`toast ${type}`;t.innerHTML=`<span>${{success:'✅',error:'❌',info:'ℹ️'}[type]||'ℹ️'}</span><span>${msg}</span>`;document.getElementById('toast-container').appendChild(t);setTimeout(()=>t.remove(),3500);};
+window.togglePwInline=(id,btn)=>{const el=document.getElementById(id);el.type=el.type==='password'?'text':'password';btn.querySelector('svg').innerHTML=el.type==='password'?'<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>':'<path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>';};
+
+(async()=>{
+  UD=await requireAuth(false);
+  CID=UD.uid;
+  initUI();
+  await loadAll();
+})();
+
+function initUI(){
+  const name=UD.name||UD.email||'User';
+  const biz=UD.business_name||'Your Business';
+  const hr=new Date().getHours();
+  const greet=hr<12?'Good morning':hr<17?'Good afternoon':'Good evening';
+  document.getElementById('greetText').textContent=`${greet}, ${name.split(' ')[0]}! 👋`;
+  document.getElementById('bizSub').textContent=biz;
+  document.getElementById('sidebarName').textContent=name;
+  document.getElementById('sidebarPlan').textContent=(UD.plan||'trial').toUpperCase()+' plan';
+  document.getElementById('planName').textContent=UD.plan||'trial';
+  if(UD.plan_expires){const e=new Date(UD.plan_expires.seconds?UD.plan_expires.seconds*1000:UD.plan_expires);document.getElementById('planExp').textContent='Expires: '+e.toLocaleDateString('en-IN');}
+  const init=name[0].toUpperCase();
+  document.getElementById('sidebarAvatar').textContent=init;
+  document.getElementById('topAvatar').textContent=init;
+  document.getElementById('setName').value=name;
+  document.getElementById('setBiz').value=biz;
+  document.getElementById('setPhone').value=UD.phone||'';
+  document.getElementById('setEmail').value=UD.email;
+  setWAStatus(UD.wa_connected,UD.whatsapp_number);
+}
+
+function setWAStatus(conn,num){
+  const dot=document.getElementById('waDot');
+  const txt=document.getElementById('waStatusText');
+  const icon=document.getElementById('waIconWrap');
+  const title=document.getElementById('waTitle');
+  const desc=document.getElementById('waDesc');
+  const info=document.getElementById('waInfo');
+  const badge=document.getElementById('waBadge');
+  const connBtn=document.getElementById('waConnBtn');
+  if(conn){
+    dot.className='wa-dot connected';txt.textContent=num||'Connected';
+    icon.textContent='✅';icon.style.background='#00e67614';icon.style.borderColor='var(--green-border)';
+    title.textContent='WhatsApp Connected ✓';desc.textContent=`Number: ${num||'Verified'}`;
+    info.style.display='block';document.getElementById('waNumDisplay').textContent=num||'Connected';
+    badge.style.display='none';if(connBtn)connBtn.style.display='none';
+  } else {
+    dot.className='wa-dot disconnected';txt.textContent='Not connected';
+    icon.textContent='❌';icon.style.background='#ff3d5714';icon.style.borderColor='#ff3d5730';
+    title.textContent='Not Connected';info.style.display='none';
+    badge.style.display='inline';if(connBtn)connBtn.style.display='block';
+  }
+}
+
+async function loadAll(){
+  const [lSnap,tSnap,mSnap,fSnap]=await Promise.all([
+    getDocs(query(collection(db,'leads'),where('client_id','==',CID))),
+    getDocs(query(collection(db,'templates'),where('client_id','==',CID))),
+    getDocs(query(collection(db,'messages'),where('client_id','==',CID),limit(200))),
+    getDocs(query(collection(db,'followups'),where('client_id','==',CID))),
+  ]);
+  allLeads=lSnap.docs.map(d=>({id:d.id,...d.data()}));
+  allTmpls=tSnap.docs.map(d=>({id:d.id,...d.data()}));
+  const allMsgs=mSnap.docs.map(d=>d.data());
+  allFU=fSnap.docs.map(d=>({id:d.id,...d.data()}));
+
+  renderStats(allMsgs);
+  renderOverviewCharts();
+  renderLeads(allLeads);
+  renderTemplates();
+  renderMessages(allMsgs);
+  renderFollowups();
+  renderAnalytics(allMsgs);
+}
+
+function renderStats(msgs){
+  const active=allTmpls.filter(t=>t.active).length;
+  const pending=allFU.filter(f=>f.status==='pending').length;
+  document.getElementById('stLeads').textContent=allLeads.length;
+  document.getElementById('stMsgs').textContent=msgs.length;
+  document.getElementById('stTmpls').textContent=active;
+  document.getElementById('stFu').textContent=pending;
+  // Pending badge in sidebar
+  const pb=document.getElementById('fuPendingBadge');
+  pb.textContent=pending;pb.style.display=pending>0?'inline':'none';
+  // Message plan usage
+  document.getElementById('msgUsedTxt').textContent=`${msgs.length} / 500`;
+  document.getElementById('msgProgressFill').style.width=Math.min((msgs.length/500)*100,100)+'%';
+  // Sparklines (simulated week data)
+  const rnd=(base)=>Array.from({length:7},(_,i)=>Math.max(0,base+Math.round((Math.random()-.4)*(base*.6))));
+  setTimeout(()=>{
+    drawSparkline(document.getElementById('spLeads'),rnd(allLeads.length),'#00e676');
+    drawSparkline(document.getElementById('spMsgs'),rnd(msgs.length),'#4d9fff');
+    drawSparkline(document.getElementById('spTmpls'),rnd(active),'#ffc947');
+    drawSparkline(document.getElementById('spFu'),rnd(pending),'#4d9fff');
+  },100);
+}
+
+function renderOverviewCharts(){
+  const statuses=['new','contacted','qualified','converted','lost'];
+  const colors=['#4d9fff','#ffc947','#00e676','#00c853','#ff3d57'];
+  const counts=statuses.map(s=>allLeads.filter(l=>l.status===s).length);
+  const total=allLeads.length||1;
+  const segments=statuses.map((s,i)=>({color:colors[i],value:counts[i]})).filter(s=>s.value>0);
+  setTimeout(()=>{
+    drawDonut(document.getElementById('donutCanvas'),segments,allLeads.length);
+    // Legend
+    document.getElementById('donutLegend').innerHTML=statuses.map((s,i)=>`
+      <div class="legend-item"><div class="legend-dot" style="background:${colors[i]}"></div>
+      <span style="color:var(--text);text-transform:capitalize">${s}</span>
+      <span style="color:var(--muted);margin-left:auto">${counts[i]}</span></div>`).join('');
+    // Week bars (simulated)
+    const labels=Array.from({length:7},(_,i)=>{const d=new Date(today);d.setDate(d.getDate()-6+i);return DAYS[d.getDay()];});
+    const vals=Array.from({length:7},()=>Math.floor(Math.random()*8));
+    vals[6]=allLeads.length>0?Math.min(allLeads.length,vals[6]+1):vals[6];
+    drawBars(document.getElementById('weekBarsCanvas'),labels,vals,{color:'#00e676',highlightLast:true});
+  },150);
+  // Recent leads
+  const recent=allLeads.slice(-4).reverse();
+  const statusColors={new:'badge-blue',contacted:'badge-yellow',qualified:'badge-green',converted:'badge-green',lost:'badge-red'};
+  document.getElementById('recentLeads').innerHTML=recent.length?recent.map(l=>`
+    <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #1a1e1a">
+      <div class="avatar" style="width:32px;height:32px;font-size:12px">${(l.name||l.phone||'?')[0].toUpperCase()}</div>
+      <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;color:var(--white);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l.name||l.phone}</div>
+      <div style="font-size:11px;color:var(--muted)">${l.phone}</div></div>
+      <span class="badge ${statusColors[l.status]||'badge-muted'}">${l.status}</span>
+    </div>`).join(''):'<div class="empty-state"><div class="empty-icon">👥</div><p>Koi lead nahi abhi</p></div>';
+}
+
+function renderTemplates(){
+  document.getElementById('tmplList').innerHTML=allTmpls.length?allTmpls.map(t=>`
+    <div class="card" style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+        <div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+            <span style="font-family:var(--font-d);font-weight:700;color:var(--white)">${t.name}</span>
+            ${t.is_default?'<span class="badge badge-blue">Default</span>':''}
+            <span class="badge ${t.active?'badge-green':'badge-muted'}">${t.active?'Active':'Off'}</span>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">${(t.trigger_keywords||[]).map(k=>`<span class="tag">${k}</span>`).join('')}${!(t.trigger_keywords||[]).length?'<span style="font-size:12px;color:var(--muted)">No keywords</span>':''}</div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost btn-xs" onclick="editTmpl('${t.id}')">Edit</button>
+          <button class="btn btn-ghost btn-xs" onclick="toggleTmpl('${t.id}',${!t.active})">${t.active?'Disable':'Enable'}</button>
+          <button class="btn btn-danger btn-xs" onclick="delTmpl('${t.id}')">Del</button>
+        </div>
+      </div>
+      <div style="background:#0d110d;border-radius:8px;padding:10px 14px;font-size:13px;color:var(--text)">"${t.message_body}"</div>
+    </div>`).join(''):`<div class="empty-state"><div class="empty-icon">📋</div><p>Koi template nahi</p><br><button class="btn btn-primary btn-sm" onclick="openTmpl()">+ New Template</button></div>`;
+}
+
+function renderLeads(leads){
+  const sc={new:'badge-blue',contacted:'badge-yellow',qualified:'badge-green',converted:'badge-green',lost:'badge-red'};
+  document.getElementById('leadsBody').innerHTML=leads.length?leads.map(l=>`
+    <tr>
+      <td><div style="display:flex;align-items:center;gap:10px"><div class="avatar" style="width:28px;height:28px;font-size:11px">${(l.name||l.phone||'?')[0].toUpperCase()}</div><span style="font-weight:600;color:var(--white)">${l.name||'—'}</span></div></td>
+      <td style="color:var(--muted);font-size:12px">${l.phone}</td>
+      <td><select class="form-input" style="width:auto;padding:4px 8px;font-size:12px" onchange="updLeadStatus('${l.id}',this.value)">
+        ${['new','contacted','qualified','converted','lost'].map(s=>`<option value="${s}"${l.status===s?' selected':''}>${s}</option>`).join('')}
+      </select></td>
+      <td style="color:var(--muted);font-size:12px">${l.source||'whatsapp'}</td>
+      <td style="color:var(--muted);font-size:12px">${l.created_at?new Date(l.created_at.seconds?l.created_at.seconds*1000:l.created_at).toLocaleDateString('en-IN'):'—'}</td>
+      <td><button class="btn btn-danger btn-xs" onclick="delLead('${l.id}')">Del</button></td>
+    </tr>`).join(''):'<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">👥</div><p>Koi lead nahi</p></div></td></tr>';
+}
+
+function renderMessages(msgs){
+  document.getElementById('msgsBody').innerHTML=msgs.length?msgs.slice(-50).reverse().map(m=>`
+    <tr>
+      <td><span class="badge ${m.direction==='inbound'?'badge-blue':'badge-green'}">${m.direction==='inbound'?'↓IN':'↑OUT'}</span></td>
+      <td style="color:var(--muted);font-size:12px">${m.lead_phone}</td>
+      <td style="font-size:13px;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">"${m.body}"</td>
+      <td style="font-size:12px;color:var(--muted)">${m.timestamp?new Date(m.timestamp.seconds?m.timestamp.seconds*1000:m.timestamp).toLocaleString('en-IN'):'—'}</td>
+    </tr>`).join(''):'<tr><td colspan="4"><div class="empty-state"><div class="empty-icon">✉️</div><p>No messages</p></div></td></tr>';
+}
+
+function renderFollowups(){
+  const statusColors={pending:'badge-yellow',sent:'badge-green',failed:'badge-red',cancelled:'badge-muted'};
+  // Day summary cards
+  const days=[1,3,7];
+  document.getElementById('fuSummaryCards').innerHTML=days.map(d=>{
+    const dayFU=allFU.filter(f=>f.attempt===(days.indexOf(d)+1));
+    const sent=dayFU.filter(f=>f.status==='sent').length;
+    const pend=dayFU.filter(f=>f.status==='pending').length;
+    const total=dayFU.length||1;
+    const pct=Math.round((sent/total)*100);
+    return `<div class="card" style="text-align:center">
+      <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Day ${d}</div>
+      <div style="font-family:var(--font-d);font-size:26px;font-weight:800;color:var(--green)">${pct}%</div>
+      <div style="font-size:12px;color:var(--muted);margin:4px 0">Success Rate</div>
+      <div class="progress-bar" style="margin-top:8px"><div class="progress-fill" style="width:${pct}%"></div></div>
+      <div style="display:flex;justify-content:space-between;margin-top:10px;font-size:11px;color:var(--muted)">
+        <span>✓ ${sent} sent</span><span>⏳ ${pend} pending</span>
+      </div>
+    </div>`;
+  }).join('');
+  // Table
+  document.getElementById('fuBody').innerHTML=allFU.length?allFU.map(f=>`
+    <tr>
+      <td style="color:var(--muted);font-size:12px">${f.lead_phone}</td>
+      <td style="font-size:13px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">"${f.message_body}"</td>
+      <td style="font-size:12px;color:var(--muted)">${f.scheduled_at?new Date(f.scheduled_at.seconds?f.scheduled_at.seconds*1000:f.scheduled_at).toLocaleString('en-IN'):'—'}</td>
+      <td><span class="badge ${statusColors[f.status]||'badge-muted'}">${f.status}</span></td>
+      <td style="text-align:center;color:var(--muted)">${f.attempt||1}</td>
+      <td><div style="display:flex;gap:6px">
+        ${f.status==='pending'?`<button class="btn btn-outline btn-xs" onclick="sendFuNow('${f.id}')">Send Now</button><button class="btn btn-danger btn-xs" onclick="cancelFu('${f.id}')">Cancel</button>`:'—'}
+      </div></td>
+    </tr>`).join(''):'<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">📅</div><p>No follow-ups</p></div></td></tr>';
+}
+
+function renderAnalytics(msgs){
+  const conv=allLeads.length?Math.round((allLeads.filter(l=>l.status==='converted').length/allLeads.length)*100):0;
+  const sent=allFU.filter(f=>f.status==='sent').length;
+  const fuTotal=allFU.length||1;
+  const fuSuccess=Math.round((sent/fuTotal)*100);
+  setTimeout(()=>{
+    drawRing(document.getElementById('ringConv'),conv,100,'#00e676','Conv Rate');
+    drawRing(document.getElementById('ringResp'),72,100,'#4d9fff','Response');
+    drawRing(document.getElementById('ringOpen'),85,100,'#ffc947','Open Rate');
+    drawRing(document.getElementById('ringFu'),fuSuccess,100,'#ff3d57','Follow-up');
+    // Daily bars (simulated)
+    const labels=Array.from({length:7},(_,i)=>{const d=new Date(today);d.setDate(d.getDate()-6+i);return DAYS[d.getDay()];});
+    drawBars(document.getElementById('dailyLeadsCanvas'),labels,Array.from({length:7},()=>Math.floor(Math.random()*6)),{color:'#00e676'});
+    drawBars(document.getElementById('dailyMsgsCanvas'),labels,Array.from({length:7},()=>Math.floor(Math.random()*20)+2),{color:'#4d9fff'});
+  },200);
+  // Template performance
+  const maxHits=Math.max(...allTmpls.map(t=>t.hits||Math.floor(Math.random()*50)),1);
+  document.getElementById('tmplPerf').innerHTML=allTmpls.length?allTmpls.map(t=>{
+    const hits=t.hits||Math.floor(Math.random()*50);
+    const pct=Math.round((hits/maxHits)*100);
+    return `<div style="margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+        <span style="font-size:13px;color:var(--white);font-weight:500">${t.name}</span>
+        <span style="font-size:13px;color:var(--green);font-weight:700">${hits} hits</span>
+      </div>
+      <div class="tmpl-bar"><div class="tmpl-fill" style="width:${pct}%"></div></div>
+    </div>`;}).join(''):'<p style="color:var(--muted)">No templates yet</p>';
+  // Follow-up breakdown
+  document.getElementById('fuSent').textContent=allFU.filter(f=>f.status==='sent').length;
+  document.getElementById('fuPend').textContent=allFU.filter(f=>f.status==='pending').length;
+  document.getElementById('fuFail').textContent=allFU.filter(f=>f.status==='failed').length;
+}
+
+// ── Template CRUD ─────────────────────────────────────────────
+window.openTmpl=()=>{editTmplId=null;document.getElementById('tmplModalTitle').textContent='New Template';['tName','tKw','tBody'].forEach(id=>document.getElementById(id).value='');document.getElementById('tDef').checked=false;document.getElementById('tmplModal').classList.add('show');};
+window.editTmpl=(id)=>{editTmplId=id;const t=allTmpls.find(x=>x.id===id);if(!t)return;document.getElementById('tmplModalTitle').textContent='Edit Template';document.getElementById('tName').value=t.name||'';document.getElementById('tKw').value=(t.trigger_keywords||[]).join(', ');document.getElementById('tBody').value=t.message_body||'';document.getElementById('tDef').checked=!!t.is_default;document.getElementById('tmplModal').classList.add('show');};
+window.saveTmpl=async()=>{const name=document.getElementById('tName').value.trim();const body=document.getElementById('tBody').value.trim();if(!name||!body){toast('Name aur body required!','error');return;}
+  const data={client_id:CID,name,message_body:body,trigger_keywords:document.getElementById('tKw').value.split(',').map(k=>k.trim()).filter(Boolean),is_default:document.getElementById('tDef').checked,active:true,updated_at:serverTimestamp()};
+  if(editTmplId){await updateDoc(doc(db,'templates',editTmplId),data);toast('Updated!');}else{data.created_at=serverTimestamp();await addDoc(collection(db,'templates'),data);toast('Saved!');}
+  closeModal('tmplModal');await loadAll();};
+window.toggleTmpl=async(id,v)=>{await updateDoc(doc(db,'templates',id),{active:v,updated_at:serverTimestamp()});toast(v?'Enabled!':'Disabled!');await loadAll();};
+window.delTmpl=async(id)=>{if(!confirm('Delete?'))return;await deleteDoc(doc(db,'templates',id));toast('Deleted!');await loadAll();};
+
+// ── Lead actions ──────────────────────────────────────────────
+window.updLeadStatus=async(id,s)=>{await updateDoc(doc(db,'leads',id),{status:s,updated_at:serverTimestamp()});allLeads=allLeads.map(l=>l.id===id?{...l,status:s}:l);toast('Updated!');};
+window.delLead=async(id)=>{if(!confirm('Delete?'))return;await deleteDoc(doc(db,'leads',id));allLeads=allLeads.filter(l=>l.id!==id);renderLeads(allLeads);toast('Deleted!');};
+window.filterLeads=()=>{const q=document.getElementById('leadSearch').value.toLowerCase();const s=document.getElementById('leadFilter').value;renderLeads(allLeads.filter(l=>(!q||(l.name||'').toLowerCase().includes(q)||l.phone.includes(q))&&(!s||l.status===s)));};
+window.deleteAllLeads=async()=>{for(const l of allLeads)await deleteDoc(doc(db,'leads',l.id));allLeads=[];renderLeads([]);toast('All deleted!');};
+
+// ── Follow-up actions ─────────────────────────────────────────
+window.sendFuNow=async(id)=>{toast('Follow-up queued to send!','info');await updateDoc(doc(db,'followups',id),{status:'sent',sent_at:serverTimestamp()});allFU=allFU.map(f=>f.id===id?{...f,status:'sent'}:f);renderFollowups();};
+window.cancelFu=async(id)=>{await updateDoc(doc(db,'followups',id),{status:'cancelled'});allFU=allFU.map(f=>f.id===id?{...f,status:'cancelled'}:f);renderFollowups();toast('Cancelled!','info');};
+
+// ── WhatsApp ──────────────────────────────────────────────────
+window.connectWA=async()=>{
+  const pid=document.getElementById('phoneId').value.trim();const tok=document.getElementById('accessTok').value.trim();
+  const errEl=document.getElementById('waFormErr');const btn=document.getElementById('waConnBtn');
+  if(!pid||!tok){errEl.textContent='Dono fields required!';errEl.style.display='block';return;}
+  btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Verifying...';errEl.style.display='none';
+  try{
+    const resp=await fetch(`/api/whatsapp/connect/${CID}`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+(await auth.currentUser.getIdToken())},body:JSON.stringify({phone_number_id:pid,access_token:tok})});
+    const data=await resp.json();
+    if(!resp.ok)throw new Error(data.detail||'Failed');
+    await updateDoc(doc(db,'users',CID),{wa_connected:true,whatsapp_number:data.number,meta_phone_number_id:pid});
+    UD.wa_connected=true;UD.whatsapp_number=data.number;setWAStatus(true,data.number);toast('WhatsApp connected: '+data.number);
+  }catch(e){errEl.textContent=e.message;errEl.style.display='block';}
+  btn.disabled=false;btn.innerHTML='Connect & Verify →';
+};
+window.disconnectWA=async()=>{if(!confirm('Disconnect?'))return;await updateDoc(doc(db,'users',CID),{wa_connected:false,whatsapp_number:null,meta_phone_number_id:null,meta_access_token:null});UD.wa_connected=false;setWAStatus(false,null);toast('Disconnected','info');};
+
+// ── Settings ──────────────────────────────────────────────────
+window.saveProfile=async()=>{const name=document.getElementById('setName').value.trim();const biz=document.getElementById('setBiz').value.trim();const phone=document.getElementById('setPhone').value.trim();if(!name)return toast('Naam required!','error');await Promise.all([updateDoc(doc(db,'users',CID),{name,business_name:biz,phone,updated_at:serverTimestamp()}),updateDoc(doc(db,'clients',CID),{name,business_name:biz,phone,updated_at:serverTimestamp()}),updateProfile(auth.currentUser,{displayName:name})]);document.getElementById('sidebarName').textContent=name;document.getElementById('sidebarAvatar').textContent=name[0].toUpperCase();document.getElementById('topAvatar').textContent=name[0].toUpperCase();toast('Profile saved!');};
+window.changePw=async()=>{const np=document.getElementById('newPw').value;const cp=document.getElementById('confPw').value;if(np.length<8)return toast('Min 8 chars!','error');if(np!==cp)return toast('Match nahi!','error');try{await updatePassword(auth.currentUser,np);toast('Password updated!');}catch(e){if(e.code==='auth/requires-recent-login')toast('Re-login karein phir try karein.','error');else toast(e.message,'error');}};
+
+// ── Tab nav ───────────────────────────────────────────────────
+const tabTitles={overview:'Overview',whatsapp:'WhatsApp',templates:'Templates',analytics:'Analytics',leads:'All Leads',messages:'Messages',followups:'Follow-ups',settings:'Settings'};
+window.showTab=(id,el)=>{document.querySelectorAll('.page-section').forEach(s=>s.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));document.getElementById('tab-'+id).classList.add('active');if(el)el.classList.add('active');document.getElementById('topbarTitle').textContent=tabTitles[id]||id;};
+window.closeModal=id=>document.getElementById(id).classList.remove('show');
+window.doLogout=logout;
+</script>
+</body>
+</html>

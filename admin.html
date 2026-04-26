@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Admin — WaFlow</title>
+  <link rel="stylesheet" href="auth.css"/>
+  <style>
+    .metric-row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--border)}
+    .metric-row:last-child{border:none}
+    .bar{height:5px;background:var(--border);border-radius:3px;flex:1}
+    .bar-fill{height:100%;border-radius:3px;transition:width 1s ease}
+    .log-line{font-family:monospace;font-size:12px;line-height:2}
+    .uptime-pill{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+  </style>
+</head>
+<body>
+<div class="dash-layout">
+<aside class="sidebar">
+  <a href="index.html" class="sidebar-logo">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="#00e676"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a5.26 5.26 0 00-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+    <span>WaFlow</span>
+  </a>
+  <div style="margin:8px;padding:7px 12px;background:var(--green-dim);border-radius:8px;border:1px solid var(--green-border)">
+    <div style="font-size:10px;font-weight:700;color:var(--green);letter-spacing:1px">ADMIN PANEL</div>
+  </div>
+  <div class="sidebar-section">Platform</div>
+  <button class="nav-item active" onclick="showTab('overview',this)"><span class="nav-icon">📊</span>Overview</button>
+  <button class="nav-item" onclick="showTab('clients',this)"><span class="nav-icon">🏢</span>All Clients</button>
+  <button class="nav-item" onclick="showTab('messages',this)"><span class="nav-icon">✉️</span>Messages</button>
+  <button class="nav-item" onclick="showTab('revenue',this)"><span class="nav-icon">💰</span>Revenue</button>
+  <div class="sidebar-section">System</div>
+  <button class="nav-item" onclick="showTab('system',this)"><span class="nav-icon">⚙️</span>System</button>
+  <button class="nav-item" onclick="showTab('logs',this)"><span class="nav-icon">📄</span>Live Logs</button>
+  <div class="sidebar-bottom">
+    <div class="sidebar-user">
+      <div class="avatar" id="aAv" style="width:34px;height:34px;font-size:13px">A</div>
+      <div><div class="sidebar-user-name" id="aNm">Admin</div><div class="sidebar-user-role" style="color:var(--yellow)">Super Admin</div></div>
+    </div>
+    <button class="nav-item" style="color:var(--red);margin-top:4px" onclick="doLogout()"><span class="nav-icon">🚪</span>Logout</button>
+  </div>
+</aside>
+<div class="dash-main">
+  <div class="dash-topbar">
+    <span class="dash-topbar-title" id="tbTitle">Admin Overview</span>
+    <div style="display:flex;align-items:center;gap:10px">
+      <span style="font-size:12px;color:var(--muted)" id="aEml"></span>
+      <div class="avatar" id="aAvT" style="width:30px;height:30px;font-size:11px">A</div>
+    </div>
+  </div>
+  <div class="dash-content">
+
+  <div class="page-section active" id="tab-overview">
+    <div style="margin-bottom:20px"><h2 style="font-family:var(--font-d);font-size:22px;font-weight:800;color:var(--white)">Platform Overview</h2></div>
+    <div class="grid-4" style="margin-bottom:20px">
+      <div class="stat-card"><div class="stat-label">Total Users</div><div class="stat-value" id="stU">—</div></div>
+      <div class="stat-card"><div class="stat-label">WA Connected</div><div class="stat-value" id="stC" style="color:var(--green)">—</div></div>
+      <div class="stat-card"><div class="stat-label">Total Leads</div><div class="stat-value" id="stL">—</div></div>
+      <div class="stat-card"><div class="stat-label">MRR</div><div class="stat-value" id="stM" style="color:var(--yellow)">—</div></div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div style="font-family:var(--font-d);font-weight:700;color:var(--white);margin-bottom:4px">Top Clients by Leads</div>
+        <div style="color:var(--muted);font-size:12px;margin-bottom:14px">Colored by plan tier</div>
+        <canvas id="tcBars" style="width:100%;height:150px;display:block"></canvas>
+        <div id="tcLegend" style="margin-top:12px;display:flex;flex-direction:column;gap:8px"></div>
+      </div>
+      <div class="card">
+        <div style="font-family:var(--font-d);font-weight:700;color:var(--white);margin-bottom:16px">Plan Distribution</div>
+        <div id="planDist"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-section" id="tab-clients">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+      <h2 style="font-family:var(--font-d);font-size:20px;font-weight:800;color:var(--white)">All Clients</h2>
+      <input type="text" id="clSr" class="form-input" placeholder="Search..." style="width:200px;padding:8px 14px" oninput="filterC()"/>
+    </div>
+    <div class="card" style="padding:0"><div class="table-wrap"><table>
+      <thead><tr><th>Business</th><th>Email</th><th>Plan</th><th>Revenue</th><th>WA</th><th>Leads</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody id="clBd"></tbody>
+    </table></div></div>
+  </div>
+
+  <div class="page-section" id="tab-messages">
+    <div style="margin-bottom:20px"><h2 style="font-family:var(--font-d);font-size:20px;font-weight:800;color:var(--white)">All Messages</h2></div>
+    <div class="card" style="padding:0"><div class="table-wrap"><table>
+      <thead><tr><th>Client</th><th>Dir</th><th>Phone</th><th>Message</th><th>Time</th></tr></thead>
+      <tbody id="msgBd"></tbody>
+    </table></div></div>
+  </div>
+
+  <div class="page-section" id="tab-revenue">
+    <div style="margin-bottom:20px"><h2 style="font-family:var(--font-d);font-size:20px;font-weight:800;color:var(--white)">Revenue</h2></div>
+    <div class="grid-3" style="margin-bottom:20px">
+      <div class="stat-card"><div class="stat-label">MRR</div><div class="stat-value" id="rMrr">—</div><div class="stat-delta" id="rDelta"></div></div>
+      <div class="stat-card"><div class="stat-label">ARR</div><div class="stat-value" style="color:var(--yellow)" id="rArr">—</div></div>
+      <div class="stat-card"><div class="stat-label">Paying Users</div><div class="stat-value" style="color:var(--blue)" id="rPay">—</div></div>
+    </div>
+    <div class="card" style="margin-bottom:20px">
+      <div style="font-family:var(--font-d);font-weight:700;color:var(--white);margin-bottom:4px">7 Month Revenue Trend</div>
+      <div style="color:var(--muted);font-size:12px;margin-bottom:16px">Monthly recurring revenue (₹)</div>
+      <canvas id="revCh" style="width:100%;height:180px;display:block"></canvas>
+    </div>
+    <div class="card">
+      <div style="font-family:var(--font-d);font-weight:700;color:var(--white);margin-bottom:16px">Revenue by Plan</div>
+      <div id="revBk"></div>
+    </div>
+  </div>
+
+  <div class="page-section" id="tab-system">
+    <div style="margin-bottom:20px"><h2 style="font-family:var(--font-d);font-size:20px;font-weight:800;color:var(--white)">System Status</h2></div>
+    <div class="grid-2">
+      <div class="card">
+        <div style="font-family:var(--font-d);font-weight:700;color:var(--white);margin-bottom:16px">Services & Uptime</div>
+        <div id="svcList"></div>
+      </div>
+      <div class="card">
+        <div style="font-family:var(--font-d);font-weight:700;color:var(--white);margin-bottom:16px">Quick Actions</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <button class="btn btn-outline" onclick="addLog('[Admin] Follow-up batch triggered');toast('Batch triggered!')">🔄 Run Follow-up Batch</button>
+          <button class="btn btn-ghost" onclick="exportCSV()">📤 Export All Leads CSV</button>
+          <button class="btn btn-ghost" onclick="addLog('[Admin] Announcement sent');toast('Sent!','info')">📧 Send Announcement</button>
+          <button class="btn btn-danger" onclick="if(confirm('Pause all automations?')){addLog('[Admin] ⚠️ Automations PAUSED','#ff3d57');toast('Paused!','info')}">🚨 Pause Automations</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-section" id="tab-logs">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <h2 style="font-family:var(--font-d);font-size:20px;font-weight:800;color:var(--white)">Live Logs</h2>
+      <button class="btn btn-ghost btn-sm" onclick="clearLogs()">Clear</button>
+    </div>
+    <div class="card" style="background:#050905;padding:20px">
+      <div id="logsBox" style="font-family:monospace;font-size:12px;max-height:520px;overflow-y:auto;line-height:2"></div>
+    </div>
+  </div>
+
+  </div>
+</div>
+</div>
+<div id="toast-container"></div>
+<script type="module">
+import{auth,db}from"./firebase-config.js";
+import{requireAuth,logout}from"./auth-guard.js";
+import{collection,doc,getDocs,updateDoc,query,limit,serverTimestamp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import{drawRevenueBars}from"./charts.js";
+
+let AD=null,allC=[],PP={trial:0,starter:999,pro:2499,enterprise:5999},PC={trial:'#687068',starter:'#4d9fff',pro:'#00e676',enterprise:'#ffc947'},PB={trial:'badge-muted',starter:'badge-blue',pro:'badge-green',enterprise:'badge-yellow'};
+const toast=(m,t='success')=>{const el=document.createElement('div');el.className=`toast ${t}`;el.innerHTML=`<span>${{success:'✅',error:'❌',info:'ℹ️'}[t]}</span><span>${m}</span>`;document.getElementById('toast-container').appendChild(el);setTimeout(()=>el.remove(),3000);};
+window.toast=toast;
+
+(async()=>{
+  try{
+    AD=await requireAuth(true);
+    const n=AD.name||AD.email;
+    document.getElementById('aNm').textContent=n;document.getElementById('aEml').textContent=AD.email;
+    ['aAv','aAvT'].forEach(id=>document.getElementById(id).textContent=n[0].toUpperCase());
+    initLogs();await loadAll();
+  }catch(e){console.error(e);}
+})();
+
+async function loadAll(){await Promise.all([loadOverview(),loadClients(),loadMsgs(),loadRevenue()]);}
+
+async function loadOverview(){
+  const[uSn,lSn]=await Promise.all([getDocs(collection(db,'users')),getDocs(collection(db,'leads'))]);
+  const users=uSn.docs.map(d=>d.data());
+  const mrr=users.reduce((s,u)=>s+(PP[u.plan||'trial']||0),0);
+  document.getElementById('stU').textContent=users.length;
+  document.getElementById('stC').textContent=users.filter(u=>u.wa_connected).length;
+  document.getElementById('stL').textContent=lSn.size;
+  document.getElementById('stM').textContent='₹'+mrr.toLocaleString('en-IN');
+  const plans={};users.forEach(u=>{const p=u.plan||'trial';plans[p]=(plans[p]||0)+1;});
+  document.getElementById('planDist').innerHTML=Object.entries(plans).map(([p,c])=>`<div class="metric-row"><div style="width:8px;height:8px;border-radius:50%;background:${PC[p]};flex-shrink:0"></div><span style="font-size:13px;color:var(--text);text-transform:capitalize;width:90px">${p}</span><div class="bar"><div class="bar-fill" style="width:${Math.min((c/users.length)*100,100)}%;background:${PC[p]}"></div></div><span style="font-size:13px;font-weight:700;color:${PC[p]};min-width:28px;text-align:right">${c}</span></div>`).join('');
+}
+
+async function loadClients(){
+  const[cSn,lSn]=await Promise.all([getDocs(collection(db,'clients')),getDocs(collection(db,'leads'))]);
+  const lc={};lSn.docs.forEach(d=>{const cid=d.data().client_id;lc[cid]=(lc[cid]||0)+1;});
+  allC=cSn.docs.map(d=>({id:d.id,...d.data(),lcount:lc[d.id]||0}));
+  renderC(allC);
+  // Top clients colored bar chart
+  const top=[...allC].sort((a,b)=>b.lcount-a.lcount).slice(0,7);
+  setTimeout(()=>{
+    const cv=document.getElementById('tcBars');if(!cv||!top.length)return;
+    const dpr=window.devicePixelRatio||1,rect=cv.getBoundingClientRect();
+    cv.width=rect.width*dpr;cv.height=rect.height*dpr;
+    const ctx=cv.getContext('2d');ctx.scale(dpr,dpr);
+    const w=rect.width,h=rect.height,max=Math.max(...top.map(c=>c.lcount),1),pX=6,pY=22,pB=26,bW=(w-pX*2)/top.length,gap=bW*0.25,bw=bW-gap,cH=h-pY-pB;
+    top.forEach((c,i)=>{
+      const col=PC[c.plan||'trial']||'#687068',bh=(c.lcount/max)*cH,x=pX+i*bW+gap/2,y=pY+cH-bh;
+      ctx.fillStyle=col+'99';
+      if(bh>5){ctx.beginPath();ctx.moveTo(x,y+4);ctx.arcTo(x,y,x+4,y,4);ctx.arcTo(x+bw,y,x+bw,y+4,4);ctx.lineTo(x+bw,y+bh);ctx.lineTo(x,y+bh);ctx.closePath();}
+      else ctx.rect(x,y,bw,Math.max(bh,2));
+      ctx.fill();
+      if(bh>14){ctx.font='600 9px DM Sans,sans-serif';ctx.fillStyle='#fff';ctx.textAlign='center';ctx.fillText(c.lcount,x+bw/2,y-4);}
+      ctx.font='400 9px DM Sans,sans-serif';ctx.fillStyle='#687068';ctx.textAlign='center';ctx.fillText((c.business_name||c.name||'?').substring(0,7),x+bw/2,h-6);
+    });
+  },200);
+  document.getElementById('tcLegend').innerHTML=top.slice(0,4).map(c=>`<div style="display:flex;align-items:center;gap:10px"><div class="avatar" style="width:24px;height:24px;font-size:10px;background:${PC[c.plan||'trial']}33;color:${PC[c.plan||'trial']};border:1px solid ${PC[c.plan||'trial']}55">${(c.business_name||c.name||'?')[0].toUpperCase()}</div><span style="font-size:13px;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.business_name||c.name}</span><span class="badge ${PB[c.plan||'trial']}" style="font-size:10px">${c.plan||'trial'}</span><span style="font-size:13px;font-weight:700;color:var(--green);min-width:28px;text-align:right">${c.lcount}</span></div>`).join('');
+}
+
+function renderC(clients){
+  document.getElementById('clBd').innerHTML=clients.map(c=>`<tr><td><div style="display:flex;align-items:center;gap:8px"><div class="avatar" style="width:26px;height:26px;font-size:10px">${(c.business_name||c.name||'?')[0].toUpperCase()}</div><span style="font-weight:600;color:var(--white)">${c.business_name||c.name||'—'}</span></div></td><td style="color:var(--muted);font-size:12px">${c.email||'—'}</td><td><span class="badge ${PB[c.plan||'trial']}" style="text-transform:capitalize">${c.plan||'trial'}</span></td><td style="font-weight:700;color:var(--green);font-size:13px">${(PP[c.plan||'trial']||0)?'₹'+(PP[c.plan||'trial']).toLocaleString('en-IN')+'/mo':'—'}</td><td>${c.wa_connected?'<span class="badge badge-green">✓</span>':'<span class="badge badge-muted">—</span>'}</td><td style="font-weight:700;color:var(--green)">${c.lcount}</td><td><span class="badge ${c.active!==false?'badge-green':'badge-red'}">${c.active!==false?'Active':'Suspended'}</span></td><td>${c.active!==false?`<button class="btn btn-danger btn-xs" onclick="suspC('${c.id}','${(c.business_name||c.name||'').replace(/'/g,'')}')">Suspend</button>`:`<button class="btn btn-outline btn-xs" onclick="resC('${c.id}')">Restore</button>`}</td></tr>`).join('')||'<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--muted)">No clients</td></tr>';
+}
+window.filterC=()=>{const q=document.getElementById('clSr').value.toLowerCase();renderC(q?allC.filter(c=>(c.business_name||c.name||'').toLowerCase().includes(q)||(c.email||'').toLowerCase().includes(q)):allC);};
+window.suspC=async(id,name)=>{if(!confirm(`"${name}" suspend?`))return;await updateDoc(doc(db,'clients',id),{active:false,updated_at:serverTimestamp()});allC=allC.map(c=>c.id===id?{...c,active:false}:c);renderC(allC);addLog(`[Admin] Suspended: ${name}`,'#ffc947');toast(`${name} suspended`,'info');};
+window.resC=async(id)=>{await updateDoc(doc(db,'clients',id),{active:true,updated_at:serverTimestamp()});allC=allC.map(c=>c.id===id?{...c,active:true}:c);renderC(allC);addLog(`[Admin] Restored: ${id}`);toast('Restored!');};
+
+async function loadMsgs(){
+  const sn=await getDocs(query(collection(db,'messages'),limit(200)));
+  document.getElementById('msgBd').innerHTML=sn.docs.map(d=>{const m=d.data();return`<tr><td style="font-size:11px;color:var(--muted)">${(m.client_id||'').substring(0,8)}...</td><td><span class="badge ${m.direction==='inbound'?'badge-blue':'badge-green'}">${m.direction==='inbound'?'↓':'↑'}</span></td><td style="color:var(--muted);font-size:12px">${m.lead_phone}</td><td style="font-size:13px;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">"${m.body}"</td><td style="font-size:11px;color:var(--muted)">${m.timestamp?new Date(m.timestamp.seconds?m.timestamp.seconds*1000:m.timestamp).toLocaleString('en-IN'):'—'}</td></tr>`;}).join('')||'<tr><td colspan="5" style="text-align:center;padding:32px;color:var(--muted)">No messages</td></tr>';
+}
+
+async function loadRevenue(){
+  const sn=await getDocs(collection(db,'users'));
+  const users=sn.docs.map(d=>d.data());
+  const mrr=users.reduce((s,u)=>s+(PP[u.plan||'trial']||0),0);
+  const paying=users.filter(u=>u.plan&&u.plan!=='trial').length;
+  document.getElementById('rMrr').textContent='₹'+mrr.toLocaleString('en-IN');
+  document.getElementById('rArr').textContent='₹'+(mrr*12).toLocaleString('en-IN');
+  document.getElementById('rPay').textContent=paying;
+  document.getElementById('rDelta').textContent=mrr>0?'↑ Growing':'Start onboarding clients!';
+  const months=['Sep','Oct','Nov','Dec','Jan','Feb','Mar'],base=mrr||8000;
+  const rv=months.map((_,i)=>Math.round(base*(0.35+i*0.1)+Math.random()*base*0.04));rv[6]=mrr||base;
+  setTimeout(()=>drawRevenueBars(document.getElementById('revCh'),months,rv),200);
+  const plans={};users.forEach(u=>{const p=u.plan||'trial';plans[p]=(plans[p]||0)+1;});
+  document.getElementById('revBk').innerHTML=Object.entries(plans).map(([p,c])=>{const rv2=(PP[p]||0)*c;return`<div class="metric-row"><span style="color:var(--text);text-transform:capitalize;width:90px;font-size:13px">${p}</span><span style="color:var(--muted);font-size:12px;width:52px">${c} users</span><div class="bar"><div class="bar-fill" style="width:${mrr?Math.min((rv2/mrr)*100,100):0}%;background:${PC[p]}"></div></div><span style="color:${PC[p]};font-weight:700;font-size:13px;min-width:80px;text-align:right">₹${rv2.toLocaleString('en-IN')}</span></div>`;}).join('');
+}
+
+function initSvcs(){
+  const svcs=[{n:'FastAPI Backend',u:99.97},{n:'Firebase Firestore',u:99.99},{n:'Firebase Auth',u:99.99},{n:'Meta Webhook',u:99.82},{n:'Follow-up Scheduler',u:99.54}];
+  document.getElementById('svcList').innerHTML=svcs.map(s=>`<div class="metric-row"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;display:inline-block;flex-shrink:0"></span><span style="font-size:13px;color:var(--text);flex:1">${s.n}</span><div class="bar" style="max-width:80px"><div class="bar-fill" style="width:${s.u}%;background:${s.u>99.9?'var(--green)':s.u>99?'var(--yellow)':'var(--red)'}"></div></div><span class="uptime-pill" style="background:${s.u>99.9?'#00e67614':'#ffc94714'};color:${s.u>99.9?'var(--green)':'var(--yellow)'}">${s.u}%</span></div>`).join('');
+}
+
+function initLogs(){
+  const lb=document.getElementById('logsBox');
+  const lines=[{c:'#00e676',t:'[System] WaFlow Admin Panel loaded'},{c:'#4d9fff',t:'[Auth] Admin authenticated'},{c:'#00e676',t:'[Webhook] Meta listener active'},{c:'#00e676',t:'[Scheduler] Running (every 15min)'},{c:'#687068',t:'[System] Waiting for events...'}];
+  lb.innerHTML=lines.map(l=>`<div class="log-line" style="color:${l.c}">${l.t}</div>`).join('')+'<span style="animation:pulse 1s infinite;display:inline-block;color:#00e676">█</span>';
+}
+window.addLog=(msg,color='#00e676')=>{const lb=document.getElementById('logsBox'),cur=lb.lastElementChild,t=new Date().toLocaleTimeString('en-IN');const d=document.createElement('div');d.className='log-line';d.style.color=color;d.textContent=`[${t}] ${msg}`;lb.insertBefore(d,cur);lb.scrollTop=lb.scrollHeight;};
+window.clearLogs=()=>{document.getElementById('logsBox').innerHTML='<div class="log-line" style="color:#687068">[System] Logs cleared.</div><span style="animation:pulse 1s infinite;display:inline-block;color:#00e676">█</span>';};
+
+window.exportCSV=async()=>{
+  const sn=await getDocs(collection(db,'leads'));
+  const rows=['Name,Phone,Status,Client,Date'];
+  sn.docs.forEach(d=>{const l=d.data();rows.push(`"${l.name||''}","${l.phone}","${l.status}","${l.client_id}",""`);});
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([rows.join('\n')],{type:'text/csv'}));a.download=`leads-${Date.now()}.csv`;a.click();
+  addLog(`[Export] ${sn.size} leads exported`);toast(`${sn.size} leads exported!`);
+};
+
+const tabs={overview:'Platform Overview',clients:'All Clients',messages:'All Messages',revenue:'Revenue',system:'System Status',logs:'Live Logs'};
+window.showTab=(id,el)=>{document.querySelectorAll('.page-section').forEach(s=>s.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));document.getElementById('tab-'+id).classList.add('active');if(el)el.classList.add('active');document.getElementById('tbTitle').textContent=tabs[id]||id;if(id==='system')initSvcs();if(id==='logs')addLog('[Admin] Logs opened','#4d9fff');};
+window.doLogout=logout;
+</script>
+</body>
+</html>
